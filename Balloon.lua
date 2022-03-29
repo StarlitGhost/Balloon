@@ -1,5 +1,6 @@
 -- Copyright 2018, Hando
 -- Copyright 2021, Yuki
+-- Copyright 2022, Ghosty
 -- All rights reserved.
 
 -- Redistribution and use in source and binary forms, with or without
@@ -28,8 +29,9 @@
 --
 _addon.author = 'Hando / Modified for English client by Yuki / String code from Kenshi'
 _addon.name = 'Balloon'
-_addon.version = '0.8'
+_addon.version = '0.9'
 _addon.commands = {'Balloon','Bl'}
+require('lists')
 require('chat')
 config = require('config')
 texts = require('texts')
@@ -44,6 +46,7 @@ BalloonY = windower_settings.ui_y_res - 258
 bl_debug = 0
 defaults = {}
 defaults.blswitch = 2
+defaults.filter_speech_patterns = false
 defaults.pos = {}
 defaults.pos.x = center_screen - 280
 defaults.pos.y = BalloonY - 4
@@ -122,11 +125,13 @@ mouseON = 0
 
 windower.register_event('load',function()
 	--スレッド開始 (Thread start)
-	thread_id = coroutine.schedule(moving_check,0) 
+	thread_id = coroutine.schedule(moving_check,0)
 end)
 
 function moving_check()
 	local p = windower.ffxi.get_player()
+	if p == nil then return end
+
 	local me,x,y
 
 	while true do
@@ -145,7 +150,7 @@ function moving_check()
 		end
 		--wait
 		coroutine.sleep(1)
-		if moving == true then close_balloon() end
+		--if moving == true then close_balloon() end
 	end
 
 end
@@ -166,6 +171,7 @@ end)
 
 --閉じる (close)
 function close_balloon()
+	--print("closed")
 	Balloon_Image:hide()
 	Balloon_name:clear()
 	Balloon_txt:clear()
@@ -173,18 +179,16 @@ function close_balloon()
 end
 
 windower.register_event('incoming text',function(original,modified,original_mode,modified_mode,blocked)
-
+	-- skip text modes that aren't NPC speech
     if not ( S{150,151,142,190,144}[original_mode] ) then return end
-	if ( bl_debug == 1 ) then print("** Mode: " .. original_mode , "Text: '" .. original .."'") end
-	if ( bl_debug == 1 ) then 
-		local teststr = ""
-		for i = 1, #original do
-		local c = string.byte(original:sub(i,i),1)
-		-- do something with c
-		teststr = teststr .. (original:sub(i,i) .. "(" .. c .. ")")
-		end
-		print("codes: " .. teststr)
+
+	-- print debug info
+	if ( bl_debug == 1 ) then
+		print("** Mode: " .. original_mode , "Text: '" .. original .."'")
+		print("codes: " .. codes(original))
 	end
+
+	-- detect whether messages have an 'enter' prompt or not
 	local noenter = true
 	local endchar1 = string.byte(original:sub(string.len(original)-1,string.len(original)-1),1)
 	local endchar2 = string.byte(original:sub(string.len(original),string.len(original)),1)
@@ -193,106 +197,128 @@ windower.register_event('incoming text',function(original,modified,original_mode
 	if (endchar1 == 127 and endchar2 == 49 and not S{144}[original_mode]) or (startchar1 == 30 and startchar2 == 1) then
 		noenter = false
 	end
-	local npcname = ""
-	local result = original
-	if ( S{150,151,142,190,144}[original_mode] ) and (settings.blswitch >= 1)then
-		-- 発言者名の抽出 (Speaker name extraction)
-		s,e = original:find(".- : ")
-		npcname = ""
-		if s ~= nil then
-			if e < 32 and s > 0 then npcname = original:sub(s,e) end
-		end	
-		Balloon_name:clear()
-		Balloon_name:append(npcname:sub(0,string.len(npcname)-2))
-		
-		if npcname =="" then
-			result = "" .. "\n"
-		else
-			result = original:sub(string.len(original)-1,string.len(original))
-			--original = original:sub(0,string.len(original)-2)
-			--original = original:strip_format()
-			if ( bl_debug == 1 ) then print("Pre-shift-jis: " .. original) end
-			original = SubElements(original)
-			mes = windower.from_shift_jis(original) --utf8へ変換 (Convert to utf8)
-			if ( bl_debug == 1 ) then print("Pre-ctrl char cut: " .. mes) end
-			mes = mes:strip_format()   --制御文字カット (Control character cut)
-		end
-		--print(result)
-		if settings.blswitch == 2 then result = modified or original end
-		--print(result)
-		-- 発言 (Remark)
-		original = SubElements(original)
-		mes = windower.from_shift_jis(original)
-		if npcname ~= "" then 
-			mes = mes:gsub(npcname:gsub("-","--"),"") --タルタル等対応 (Correspondence such as tartar)
-		end
-		mess = split(mes,"")
-		Balloon_txt:clear()
-		if ( bl_debug == 1 ) then print("Pre-process: " .. mes) end
-		
-        --local mes_len = string.len(mes)
-        --mes = string.gsub(mes, "", " ")
-        ----mes = string.gsub(mes, "", "\\cs(84,155,17)")
-        ----mes = string.gsub(mes, "", "\\cs(97,127,217)")
-        ----mes = string.gsub(mes, "", "\\cs(0,0,0)")
-        --mes = string.gsub(mes, "1", "")
-        --mes = string.gsub(mes, "4", "")		
-        --mes = string.gsub(mes, "", "")
-        --mes = string.gsub(mes, "", "")
-        --mes = string.gsub(mes, "6", "")
-        --mes = string.gsub(mes, "^?", "")
-        --mes = string.gsub(mes, "　　 ", "")
-        --mes = string.gsub(mes, "", "")
-        --mes = string.gsub(mes, "", "")
-        --mes = string.gsub(mes, "", "")
-        --mes = string.gsub(mes, "5", "")
-        --mes = string.gsub(mes, string.char(187), "\"")
-        --mes = string.gsub(mes, string.char(131), "")
-        --mes = string.gsub(mes, string.char(227), "")
-        --mes = " " .. mes
-        --mes = SplitLines(mes, mes_len)
-        --mes = string.gsub(mes, "", "\\cs(84,155,17)")
-        --mes = string.gsub(mes, "", "\\cs(97,127,217)")
-        --mes = string.gsub(mes, "", "\\cs(0,0,0)")
-        --Balloon_txt:append('\n%s':format(mes))
-		
-		for k,v in ipairs(mess) do
-			v = string.gsub(v, "", "ɑ") --colour code 1
-			v = string.gsub(v, "", "β") --colour code 2
-			v = string.gsub(v, "", "ɣ") --colour code 3
-			v = string.gsub(v, "1", "")
-			v = string.gsub(v, "4", "")
-			v = string.gsub(v, "", "")
-			v = string.gsub(v, "", "")
-			v = string.gsub(v, "6", "")
-			v = string.gsub(v, "^?", "")
-			v = string.gsub(v, "　　 ", "")
-			v = string.gsub(v, "", "")
-			v = string.gsub(v, "", "")
-			v = string.gsub(v, "", "")
-			v = string.gsub(v, "5", "")
-			v = " " .. v 
-			v = SplitLines(v, string.len(v))
-			v = string.gsub(v, "ɑ", "\\cs(84,155,17)")
-			v = string.gsub(v, "β", "\\cs(97,127,217)")
-			v = string.gsub(v, "ɣ", "\\cs(0,0,0)")
-			Balloon_txt:append('\n%s':format(v))
-		end
 
-		update()
-		Balloon_name:show()
-		Balloon_Image:show()
-		Balloon_txt:show()
-		balloon_on = true
-		--if S{144}[original_mode] then
-		if noenter == true then
-			coroutine.sleep(5)
+	local result = original
+	if (settings.blswitch >= 1) then
+		result = process_balloon(original)
+
+		if noenter then
+			coroutine.sleep(10)
 			close_balloon()
 		end
     end
     return(result)
 
 end)
+
+function process_balloon(npc_text)
+	-- 発言者名の抽出 (Speaker name extraction)
+	local s,e = npc_text:find(".- : ")
+	local npcname = ""
+	if s ~= nil then
+		if e < 32 and s > 0 then npcname = npc_text:sub(s,e) end
+	end
+	Balloon_name:clear()
+	Balloon_name:append(npcname:sub(0,string.len(npcname)-2))
+
+	-- mode 1, blank log lines and visible balloon
+	if settings.blswitch == 1 then
+		if npcname == "" then
+			result = "" .. "\n"
+		else
+			result = npc_text:sub(string.len(npc_text)-1,string.len(npc_text))
+		end
+	-- mode 2, visible log and balloon
+	elseif settings.blswitch == 2 then
+		-- pass through the original message for the log
+		result = npc_text
+	end
+
+	-- 発言 (Remark)
+	local mes = SubElements(npc_text)
+	mes = SubCharactersPreShift(mes)
+	mes = windower.from_shift_jis(mes)
+	mes = SubCharactersPostShift(mes)
+
+	-- strip the NPC name from the start of the message
+	if npcname ~= "" then
+		mes = mes:gsub(npcname:gsub("-","--"),"") --タルタル等対応 (Correspondence such as tartar)
+	end
+
+	if ( bl_debug == 1 ) then
+		print("Pre-process: " .. mes)
+		print("codes: " .. codes(mes))
+	end
+
+	-- split by newlines
+	local mess = split(mes,string.char(7))
+
+	-- filter out racial speech patterns
+	if settings.filter_speech_patterns then
+		for k,v in ipairs(mess) do
+			mess[k] = string.gsub(v, "rrr", "r") -- Mithra rolling r
+			--todo: tarutaru baby talk?
+		end
+	end
+
+	Balloon_txt:clear()
+
+	local message = ""
+	for k,v in ipairs(mess) do
+		v = string.gsub(v, string.char(30)..string.char(1), "%%%%color1%%%%") --color code 1 (black/reset)
+		v = string.gsub(v, string.char(30)..string.char(2), "%%%%color2%%%%") --color code 2 (green/regular items)
+		v = string.gsub(v, string.char(30)..string.char(3), "%%%%color3%%%%") --color code 3 (blue/key items)
+		v = string.gsub(v, string.char(30)..string.char(4), "%%%%color4%%%%") --color code 4 (blue/???)
+		v = string.gsub(v, string.char(30)..string.char(5), "%%%%color5%%%%") --color code 5 (magenta/equipment)
+		v = string.gsub(v, string.char(30)..string.char(6), "%%%%color6%%%%") --color code 6 (cyan/???)
+		v = string.gsub(v, string.char(30)..string.char(7), "%%%%color7%%%%") --color code 7 (yellow/???)
+		v = string.gsub(v, string.char(30)..string.char(8), "%%%%color8%%%%") --color code 8 (orange/RoE objectives?)
+		v = string.gsub(v, "1", "")
+		v = string.gsub(v, "4", "")
+		v = string.gsub(v, "", "")
+		v = string.gsub(v, "", "")
+		v = string.gsub(v, "6", "")
+		v = string.gsub(v, "^?", "")
+		v = string.gsub(v, "　　 ", "")
+		v = string.gsub(v, "", "")
+		v = string.gsub(v, "", "")
+		v = string.gsub(v, "", "")
+		v = string.gsub(v, "5", "")
+		v = string.gsub(v, "%.%.%.([%w%p])", "... %1") --add a space after elipses to allow better line splitting
+		v = string.gsub(v, "([%w%p])%-%-([%w%p])", "%1-- %2") --same for double dashes
+		v = " " .. v
+		v = SplitLines(v, string.len(v))
+		v = string.gsub(v, "%%%%color1%%%%", "\\cs(0,0,0)")
+		v = string.gsub(v, "%%%%color2%%%%", "\\cs(84,155,17)")
+		v = string.gsub(v, "%%%%color3%%%%", "\\cs(97,127,217)")
+		v = string.gsub(v, "%%%%color4%%%%", "\\cs(97,127,217)")
+		v = string.gsub(v, "%%%%color5%%%%", "\\cs(177,26,177)")
+		v = string.gsub(v, "%%%%color6%%%%", "\\cs(0,159,173)")
+		v = string.gsub(v, "%%%%color7%%%%", "\\cs(156,149,19)")
+		v = string.gsub(v, "%%%%color8%%%%", "\\cs(173,72,0)")
+		message = message .. '\n%s':format(v)
+	end
+
+	Balloon_txt:append(message)
+
+	update()
+	Balloon_name:show()
+	Balloon_Image:show()
+	Balloon_txt:show()
+	balloon_on = true
+
+	return(result)
+end
+
+-- parses a string into char(decimal bytecode)
+function codes(str)
+	local teststr = ""
+	for i = 1, #str do
+		local c = string.byte(str:sub(i,i),1)
+		teststr = teststr .. (str:sub(i,i) .. "(" .. c .. ")")
+	end
+	return teststr
+end
 
 windower.register_event('keyboard',function(dik,pressed,flags,blocked)
 	if windower.ffxi.get_info().chat_open or blocked then return end
@@ -301,10 +327,32 @@ windower.register_event('keyboard',function(dik,pressed,flags,blocked)
 		if dik == 28 and pressed and not keydown then
 			keydown = true
 			close_balloon()
-		end	
+		end
 	end
 	if dik ==28 and not pressed then keydown = false end
 end)
+
+function SubCharactersPreShift(str)
+	local new_str = str
+	if bl_debug == 1 then print("Pre-charsub pre-shift: " .. new_str) end
+	new_str = string.gsub(new_str, string.char(129)..string.char(244), '%%%%note%%%%') -- musical note
+	new_str = string.gsub(new_str, string.char(135)..string.char(178), '%%%%lquote%%%%') -- left quote
+	new_str = string.gsub(new_str, string.char(135)..string.char(179), '%%%%rquote%%%%') -- right quote
+	new_str = string.gsub(new_str, string.char(136)..string.char(105), '%%%%e_acute%%%%') -- acute accented e
+	if bl_debug == 1 then print("Post-charsub pre-shift: " .. new_str) end
+	return new_str
+end
+
+function SubCharactersPostShift(str)
+	local new_str = str
+	if bl_debug == 1 then print("Pre-charsub post-shift: " .. new_str) end
+	new_str = string.gsub(new_str, '%%%%note%%%%', '♪')
+	new_str = string.gsub(new_str, '%%%%lquote%%%%', '“')
+	new_str = string.gsub(new_str, '%%%%rquote%%%%', '”')
+	new_str = string.gsub(new_str, '%%%%e_acute%%%%', 'é')
+	if bl_debug == 1 then print("Post-charsub post-shift: " .. new_str) end
+	return new_str
+end
 
 function SubElements(str)
 	local new_str = str
@@ -322,14 +370,15 @@ function SubElements(str)
 end
 
 function SplitLines(str, length)
+	local soft_max_line_length = 65
     local new_str = str
-    local splits = length/75
-    local position = 75
+    local splits = length/soft_max_line_length
+    local position = soft_max_line_length
     while splits > 0 do
         local pos = string.find(new_str, ' ', position)
         if pos then
             new_str = new_str:gsub('()',{[pos]='\n'})
-            position = pos + 71
+            position = pos + soft_max_line_length - 4
         end
         splits = splits - 1
     end
@@ -356,7 +405,8 @@ function split(str, delim)
 end
 
 
-windower.register_event("addon command", function(command,arg1)
+windower.register_event("addon command", function(command, ...)
+	local args = L{ ... }
 
 	if command == 'help' then
 		local t = {}
@@ -382,16 +432,31 @@ windower.register_event("addon command", function(command,arg1)
 	elseif command == '2' then
 		settings.blswitch = 2
 		printFF11("モード (mode) 2　　:吹き出し表示＆ログ表示 (Balloon display & log display)")
-		
+
+	elseif command == 'filter' then
+		settings.filter_speech_patterns = not settings.filter_speech_patterns
+		printFF11("speech pattern filtering: "..(settings.filter_speech_patterns and "on" or "off"))
+
 	elseif command == 'reset' then
 		settings.blImage.pos.x = center_screen - 330
 		settings.blImage.pos.y = BalloonY
 		printFF11("Balloon位置リセットしました。 (Balloon position reset.)")
-	elseif command == 'debug' and arg1 ~= nil then
-		bl_debug = tonumber(arg1)
+
+	elseif command == 'debug' then
+		if args then
+			bl_debug = tonumber(args[1])
+		else
+			bl_debug = (bl_debug == 0 and 1 or 0)
+		end
 		print( "Balloon: debug " .. bl_debug )
+
+	elseif command == 'test' then
+		process_balloon(args:concat(' '))
+		coroutine.sleep(10)
+		close_balloon()
+
 	end
-	
+
 	config.save(settings)
 end)
 
@@ -418,7 +483,7 @@ function update()
 	settings.pos.y = settings.blImage.pos.y - 4
 	Balloon_txt:pos( settings.pos.x, settings.pos.y)
 	settings.name.pos.x = settings.blImage.pos.x + 50
-	settings.name.pos.y = settings.blImage.pos.y - 10	
+	settings.name.pos.y = settings.blImage.pos.y - 10
 	Balloon_name:pos( settings.name.pos.x, settings.name.pos.y)
 	Balloon_Image:pos(settings.blImage.pos.x,settings.blImage.pos.y)
 end
