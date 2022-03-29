@@ -1,0 +1,79 @@
+Balloon ver 0.8
+---------------
+
+I saw this addon about 18 months ago (Jan. 2020) and intermittently made modifications to it as it looked amazing in the Youtube video linked below, but it didn't play well with the English client.
+
+https://www.youtube.com/watch?v=VhEvdX9xwpw
+
+After some digging I eventually found the author's webpage:
+
+http://handomadex.blog.fc2.com/
+
+...With the Balloon addon release page:
+
+http://handomadex.blog.fc2.com/blog-entry-354.html
+
+Having never used Lua it was extremely challenging learning about string handling, events and other arcane (to me) topics to understand the code and add features successfully. Thanks to (among others) Kenshi, Rubenator, Arcon, Chaia from the Windower Discord for their help and suggestions and answers to some of my inane questions.
+
+Thanks most of all to Hando for making a wonderful add-on that really enhances the game if you're playing through the story.
+
+-----
+
+The code I've added or modified just about works. I'm terrible at commenting code, and even worse at keeping revisions. This was brought to its current state on and off over a period of 12 months or so with frequent gaps in development. There will be bugs. I've caught the worst I think, but a couple that I know about and will hopefully get to:
+
+- If you rescale your UI in Windower or FFXI config, the balloon may disappear. //bl reset to set to default position, scaling is taken into account. (not really a bug but heyho)
+- Won't work terribly well with a gamepad - there's no way to read a gamepad button from Windower. Basically this boils down to some balloons staying on screen when they should have disappeared - use the enter key on the keyboard.
+
+To-do list:
+
+- Move parameters into settings.xml including font choice, font size, number of characters on a line.
+- Make the FFXIDB minimap go away during a cutscene.
+- Same for enemybar.
+- Add an advancement prompt for balloons that require it (possibly animated).
+
+Feedback is welcome using the details in readme.txt
+
+--
+Yuki
+August 2021
+
+-----------------------------------------------------
+
+Balloon ver 0.8
+---------------
+
+このアドオンは約18か月前（2020年1月）に見たもので、下にリンクされているYouTubeビデオで見栄えがするため、断続的に変更を加えましたが、英語のクライアントではうまく機能しませんでした。
+
+https://www.youtube.com/watch?v=VhEvdX9xwpw
+
+少し掘り下げた後、私は最終的に著者のウェブページを見つけました：
+
+http://handomadex.blog.fc2.com/
+
+... Balloonアドオンリリースページの場合：
+
+http://handomadex.blog.fc2.com/blog-entry-354.html
+
+Luaを使用したことがないので、コードを理解して機能を正常に追加するために、文字列の処理、イベント、およびその他の難解な（私にとって）トピックについて学ぶことは非常に困難でした。 Windower DiscordのKenshi、Rubenator、Arcon、Chaiaの助けと提案、そして私の非常識な質問への回答に（とりわけ）感謝します。
+
+ストーリーをプレイしている場合にゲームを本当に強化する素晴らしいアドオンを作成してくれたHandoに何よりも感謝します。
+
+-----
+
+私が追加または変更したコードは、ほぼ機能します。私はコードにコメントするのがひどく、改訂を維持するのがさらに悪いです。これは、開発に頻繁なギャップがあり、12か月ほどの期間にわたってオンとオフの現在の状態になりました。バグがあります。私は私が思う最悪の事態を捕らえましたが、私が知っている、そしてうまくいけば次のようなカップルがいます。
+
+-WindowerまたはFFXI構成でUIを再スケーリングすると、バルーンが消える場合があります。 // blをリセットしてデフォルトの位置に設定し、スケーリングが考慮されます。 （実際にはバグではありませんが、ちょっと）
+-ゲームパッドではひどくうまく機能しません-Windowerからゲームパッドボタンを読み取る方法はありません。基本的に、これは、バルーンが消えるはずのときに画面に表示されたままになるいくつかのバルーンに要約されます。キーボードのEnterキーを使用します。
+
+やることリスト：
+
+-フォントの選択、フォントサイズ、行の文字数などのパラメータをsettings.xmlに移動します。
+-カットシーン中にFFXIDBミニマップを非表示にします。
+-敵バーについても同じです。
+-それを必要とする（おそらくアニメーション化された）バルーンの前進プロンプトを追加します。
+
+readme.txtの詳細を使用してフィードバックを歓迎します
+
+-
+Yuki
+2021年8月 
