@@ -100,14 +100,14 @@ Windower4 unofficial add-on Balloon
 		Added lots of conditional debugging output - if you want to see what's happening in the background use //bl debug 1 or //bl debug 2. Output is to the console window.
 		Fixed (possibly) bug that was closing balloon as soon as it was displayed.
 	ver 0.9 30/3/22 Ghosty's first modifications.
-	    Added animated advancement prompt, like FFXIV.
-		Added background to names, like FFXIV.
-		Added dark balloon with light text for system messages, like FFXIV.
-		Added the ability to load custom balloons based on NPC names (make a folder called character_balloons and create eg: Iroha.png)
+		Added a bunch of FFXIV-like features; animated advancement prompt, background for names, dark balloon with light text for system messages.
+		Added the ability to load custom balloons based on NPC names (make a folder called character_balloons and create eg: Iroha.png).
 		Added settings and commands for soft maximum line length, promptless close delay, prompt animation, and closing by movement.
 		Added a command to generate test balloons.
 
 Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
+
+(or feel free to open an issue at https://github.com/StarlitGhost/Balloon if you have trouble with 0.9!)
 
 ■ Author
 	Hando
