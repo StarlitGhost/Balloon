@@ -103,7 +103,7 @@ Windower4 unofficial add-on Balloon
 	    Added animated advancement prompt, like FFXIV.
 		Added background to names, like FFXIV.
 		Added dark balloon with light text for system messages, like FFXIV.
-		Added the ability to load custom balloons based on NPC names.
+		Added the ability to load custom balloons based on NPC names (make a folder called character_balloons and create eg: Iroha.png)
 		Added settings and commands for soft maximum line length, promptless close delay, prompt animation, and closing by movement.
 		Added a command to generate test balloons.
 
