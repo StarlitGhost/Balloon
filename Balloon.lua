@@ -183,6 +183,7 @@ local old_y = "0"
 local balloon_on = false
 local keydown = false
 local mouseON = 0
+local waiting_to_close = false
 local frame_count = 0
 
 -------------------------------------------------------------------------------
@@ -213,8 +214,11 @@ function moving_check()
 			end
 		end
 		--wait
+		waiting_to_close = true
 		coroutine.sleep(settings.no_prompt_close_delay)
-		if moving and settings.movement_closes then close_balloon() end
+		if moving and settings.movement_closes and waiting_to_close then
+			close_balloon()
+		end
 	end
 
 end
@@ -237,6 +241,7 @@ function close_balloon()
 	Balloon_name:clear()
 	Balloon_txt:clear()
 	balloon_on = false
+	waiting_to_close = false
 end
 
 windower.register_event('incoming text',function(original,modified,original_mode,modified_mode,blocked)
@@ -265,10 +270,14 @@ windower.register_event('incoming text',function(original,modified,original_mode
 
 		if noenter then
 			Balloon_enter_prompt:hide()
+			waiting_to_close = true
 			coroutine.sleep(settings.no_prompt_close_delay)
-			close_balloon()
+			if waiting_to_close then
+				close_balloon()
+			end
 		else
 			Balloon_enter_prompt:show()
+			waiting_to_close = false
 		end
     end
     return(result)
