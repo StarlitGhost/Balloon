@@ -29,7 +29,7 @@
 --
 _addon.author = 'Hando / Modified for English client by Yuki / String code from Kenshi / Additional work by Ghosty'
 _addon.name = 'Balloon'
-_addon.version = '0.9'
+_addon.version = '0.9.1'
 _addon.commands = {'Balloon','Bl'}
 
 require('luau')
