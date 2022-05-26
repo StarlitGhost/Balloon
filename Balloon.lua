@@ -45,7 +45,7 @@ BalloonY = windower_settings.ui_y_res - 258
 local bl_debug = 0
 local defaults = {}
 defaults.blswitch = 2
-defaults.soft_max_line_length = 68
+defaults.max_line_length = 75
 defaults.movement_closes = false
 defaults.no_prompt_close_delay = 5
 defaults.animate_prompt = true
@@ -378,10 +378,10 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, "", "")
 		v = string.gsub(v, "", "")
 		v = string.gsub(v, "5", "")
-		v = string.gsub(v, "%.%.%.([%w%p])", "... %1") --add a space after elipses to allow better line splitting
+		v = string.gsub(v, "(%w)(%.%.%.+)([%w%p])", "%1%2 %3") --add a space after elipses to allow better line splitting
 		v = string.gsub(v, "([%w%p])%-%-([%w%p])", "%1-- %2") --same for double dashes
 		v = " " .. v
-		v = SplitLines(v, string.len(v))
+		v = WrapText(v)
 		if not dark then
 			v = string.gsub(v, "BL_c1_BL", "\\cs("..settings.light.reset..")")
 			v = string.gsub(v, "BL_c2_BL", "\\cs("..settings.light.items..")")
@@ -479,21 +479,33 @@ function SubElements(str)
 	return new_str
 end
 
-function SplitLines(str, length)
-    local new_str = str
-    local splits = length/settings.soft_max_line_length
-    local position = settings.soft_max_line_length
-    while splits > 0 do
-        local pos = string.find(new_str, ' ', position)
-        if pos then
-            new_str = new_str:gsub('()',{[pos]='\n'})
-            position = pos + settings.soft_max_line_length - 4
+function Tokenize(str)
+	local result = {}
+	for word in str:gmatch("%S+") do
+		result[#result+1] = word
         end
-        splits = splits - 1
+	return result
     end
-    if splits < 1 then
-        return new_str
+
+function WrapText(str)
+	local line_length = settings.max_line_length
+	local length_left = line_length
+	local result = {}
+	local line = {}
+
+	for _, word in ipairs(Tokenize(str)) do
+		if #word+1 > length_left then
+			table.insert(result, table.concat(line, ' '))
+			line = {word}
+			length_left = line_length - #word
+		else
+			table.insert(line, word)
+			length_left = length_left - (#word + 1)
+		end
     end
+
+	table.insert(result, table.concat(line, ' '))
+	return table.concat(result, '\n')
 end
 
 function split(str, delim)
@@ -524,7 +536,7 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon 1  	:吹き出し表示＆ログ非表示 (Show balloon & hide log)"
 		t[#t+1] = "     //Balloon 2  	:吹き出し表示＆ログ表示 (Balloon display & log display)"
 		t[#t+1] = "     //Balloon reset :吹き出し位置初期化 (Initialize balloon position)"
-		t[#t+1] = "     //Balloon max <length> - Soft max line length for splitting"
+		t[#t+1] = "     //Balloon max <length> - max line length for splitting"
 		t[#t+1] = "     //Balloon delay <seconds> - Delay before closing promptless balloons"
 		t[#t+1] = "     //Balloon animate - Toggle the advancement prompt indicator bouncing"
 		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement (flaky)"
@@ -553,13 +565,13 @@ windower.register_event("addon command", function(command, ...)
 		printFF11("Balloon位置リセットしました。 (Balloon position reset.)")
 
 	elseif command == 'max' then
-		local old_len = settings.soft_max_line_length
+		local old_len = settings.max_line_length
 		if not args:empty() then
-			settings.soft_max_line_length = tonumber(args[1])
+			settings.max_line_length = tonumber(args[1])
 		else
-			settings.soft_max_line_length = defaults.soft_max_line_length
+			settings.max_line_length = defaults.max_line_length
 		end
-		printFF11("Balloon: soft maximum line length changed: " .. old_len .. " -> " .. settings.soft_max_line_length)
+		printFF11("Balloon: maximum line length changed: " .. old_len .. " -> " .. settings.max_line_length)
 
 	elseif command == 'delay' then
 		local old_delay = settings.no_prompt_close_delay
