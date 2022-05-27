@@ -53,7 +53,7 @@ defaults.offset = {}
 defaults.offset.x = 48
 defaults.offset.y = -4
 defaults.text = {}
-defaults.text.font = 'Segoe UI'
+defaults.text.font = {English='Segoe UI', Japanese='Meiryo'}[windower.ffxi.get_info().language]
 defaults.text.size = 11
 defaults.text.red = 0
 defaults.text.green = 0
@@ -98,7 +98,7 @@ defaults.name.offset = {}
 defaults.name.offset.x = 50
 defaults.name.offset.y = -10
 defaults.name.text = {}
-defaults.name.text.font = 'Segoe UI'
+defaults.name.text.font = {English='Segoe UI', Japanese='Meiryo'}[windower.ffxi.get_info().language]
 defaults.name.text.size = 14
 defaults.name.text.red = 255
 defaults.name.text.green = 255
@@ -555,7 +555,7 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon max <length> - max line length for splitting"
 		t[#t+1] = "     //Balloon delay <seconds> - Delay before closing promptless balloons"
 		t[#t+1] = "     //Balloon animate - Toggle the advancement prompt indicator bouncing"
-		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement (flaky)"
+		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement"
 		t[#t+1] = "     //Balloon debug 0/1/2 - Enable debug modes"
 		t[#t+1] = "     //Balloon test <name> : <message> - Display a test balloon"
 		t[#t+1] = "　"

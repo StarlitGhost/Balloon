@@ -104,6 +104,10 @@ Windower4 unofficial add-on Balloon
 		Added the ability to load custom balloons based on NPC names (make a folder called character_balloons and create eg: Iroha.png).
 		Added settings and commands for soft maximum line length, promptless close delay, prompt animation, and closing by movement.
 		Added a command to generate test balloons.
+	ver 0.9.1 27/5/22 Better word wrapping.
+		Rewrote the word wrapping function to obey a strict character count, maximum line length is now an actual maximum.
+		Improved ellipses and dash handling (no more "......" becoming "... ...").
+		Better Japanese language support, by making it switch fonts automatically when first loaded [English: Segoe UI, Japanese: Meiryo] (the font can still be changed in settings.xml afterwards).
 
 Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
 
