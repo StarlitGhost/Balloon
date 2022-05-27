@@ -352,6 +352,13 @@ function process_balloon(npc_text, mode)
 		print("codes: " .. codes(mes))
 	end
 
+	--strip the default color code from the start of messages,
+	--it causes the first part of the message to get cut off somehow
+	local default_color = string.char(30)..string.char(1)
+	if string.sub(mes, 1, #default_color) == default_color then
+		mes = string.sub(mes, #default_color + 1)
+	end
+
 	-- split by newlines
 	local mess = split(mes,string.char(7))
 
@@ -359,14 +366,14 @@ function process_balloon(npc_text, mode)
 
 	local message = ""
 	for k,v in ipairs(mess) do
-		v = string.gsub(v, string.char(30)..string.char(1), "BL_c1_BL") --color code 1 (black/reset)
-		v = string.gsub(v, string.char(30)..string.char(2), "BL_c2_BL") --color code 2 (green/regular items)
-		v = string.gsub(v, string.char(30)..string.char(3), "BL_c3_BL") --color code 3 (blue/key items)
-		v = string.gsub(v, string.char(30)..string.char(4), "BL_c4_BL") --color code 4 (blue/???)
-		v = string.gsub(v, string.char(30)..string.char(5), "BL_c5_BL") --color code 5 (magenta/equipment?)
-		v = string.gsub(v, string.char(30)..string.char(6), "BL_c6_BL") --color code 6 (cyan/???)
-		v = string.gsub(v, string.char(30)..string.char(7), "BL_c7_BL") --color code 7 (yellow/???)
-		v = string.gsub(v, string.char(30)..string.char(8), "BL_c8_BL") --color code 8 (orange/RoE objectives?)
+		v = string.gsub(v, string.char(30)..string.char(1), "[BL_c1]") --color code 1 (black/reset)
+		v = string.gsub(v, string.char(30)..string.char(2), "[BL_c2]") --color code 2 (green/regular items)
+		v = string.gsub(v, string.char(30)..string.char(3), "[BL_c3]") --color code 3 (blue/key items)
+		v = string.gsub(v, string.char(30)..string.char(4), "[BL_c4]") --color code 4 (blue/???)
+		v = string.gsub(v, string.char(30)..string.char(5), "[BL_c5]") --color code 5 (magenta/equipment?)
+		v = string.gsub(v, string.char(30)..string.char(6), "[BL_c6]") --color code 6 (cyan/???)
+		v = string.gsub(v, string.char(30)..string.char(7), "[BL_c7]") --color code 7 (yellow/???)
+		v = string.gsub(v, string.char(30)..string.char(8), "[BL_c8]") --color code 8 (orange/RoE objectives?)
 		v = string.gsub(v, "1", "")
 		v = string.gsub(v, "4", "")
 		v = string.gsub(v, "", "")
@@ -378,30 +385,39 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, "", "")
 		v = string.gsub(v, "", "")
 		v = string.gsub(v, "5", "")
-		v = string.gsub(v, "(%w)(%.%.%.+)([%w%p])", "%1%2 %3") --add a space after elipses to allow better line splitting
-		v = string.gsub(v, "([%w%p])%-%-([%w%p])", "%1-- %2") --same for double dashes
+		v = string.gsub(v, '(%w)(%.%.%.+)([%w“])', "%1%2 %3") --add a space after elipses to allow better line splitting
+		v = string.gsub(v, '([%w”])%-%-([%w%p])', "%1-- %2") --same for double dashes
 		v = " " .. v
+		if ( bl_debug == 1 ) then
+			print("Pre-wrap: " .. v)
+		end
 		v = WrapText(v)
+		if ( bl_debug == 1 ) then
+			print("Post-wrap: " .. v)
+		end
 		if not dark then
-			v = string.gsub(v, "BL_c1_BL", "\\cs("..settings.light.reset..")")
-			v = string.gsub(v, "BL_c2_BL", "\\cs("..settings.light.items..")")
-			v = string.gsub(v, "BL_c3_BL", "\\cs("..settings.light.keyitems..")")
-			v = string.gsub(v, "BL_c4_BL", "\\cs("..settings.light.keyitems..")")
-			v = string.gsub(v, "BL_c5_BL", "\\cs("..settings.light.gear..")")
-			v = string.gsub(v, "BL_c6_BL", "\\cs(0,159,173)")
-			v = string.gsub(v, "BL_c7_BL", "\\cs(156,149,19)")
-			v = string.gsub(v, "BL_c8_BL", "\\cs("..settings.light.roe..")")
+			v = string.gsub(v, "%[BL_c1]", "\\cs("..settings.light.reset..")")
+			v = string.gsub(v, "%[BL_c2]", "\\cs("..settings.light.items..")")
+			v = string.gsub(v, "%[BL_c3]", "\\cs("..settings.light.keyitems..")")
+			v = string.gsub(v, "%[BL_c4]", "\\cs("..settings.light.keyitems..")")
+			v = string.gsub(v, "%[BL_c5]", "\\cs("..settings.light.gear..")")
+			v = string.gsub(v, "%[BL_c6]", "\\cs(0,159,173)")
+			v = string.gsub(v, "%[BL_c7]", "\\cs(156,149,19)")
+			v = string.gsub(v, "%[BL_c8]", "\\cs("..settings.light.roe..")")
 		else
-			v = string.gsub(v, "BL_c1_BL", "\\cs("..settings.dark.reset..")")
-			v = string.gsub(v, "BL_c2_BL", "\\cs("..settings.dark.items..")")
-			v = string.gsub(v, "BL_c3_BL", "\\cs("..settings.dark.keyitems..")")
-			v = string.gsub(v, "BL_c4_BL", "\\cs("..settings.dark.keyitems..")")
-			v = string.gsub(v, "BL_c5_BL", "\\cs("..settings.dark.gear..")")
-			v = string.gsub(v, "BL_c6_BL", "\\cs(0,159,173)")
-			v = string.gsub(v, "BL_c7_BL", "\\cs(156,149,19)")
-			v = string.gsub(v, "BL_c8_BL", "\\cs("..settings.dark.roe..")")
+			v = string.gsub(v, "%[BL_c1]", "\\cs("..settings.dark.reset..")")
+			v = string.gsub(v, "%[BL_c2]", "\\cs("..settings.dark.items..")")
+			v = string.gsub(v, "%[BL_c3]", "\\cs("..settings.dark.keyitems..")")
+			v = string.gsub(v, "%[BL_c4]", "\\cs("..settings.dark.keyitems..")")
+			v = string.gsub(v, "%[BL_c5]", "\\cs("..settings.dark.gear..")")
+			v = string.gsub(v, "%[BL_c6]", "\\cs(0,159,173)")
+			v = string.gsub(v, "%[BL_c7]", "\\cs(156,149,19)")
+			v = string.gsub(v, "%[BL_c8]", "\\cs("..settings.dark.roe..")")
 		end
 		message = message .. '\n%s':format(v)
+	end
+	if ( bl_debug == 1 ) then
+		print("Final: " .. message)
 	end
 
 	Balloon_txt:append(message)
