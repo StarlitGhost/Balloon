@@ -63,10 +63,12 @@ Windower4 unofficial add-on Balloon
 	Balloon display. Log display.
 	//Bl reset
 	Display position initialization.
-	//Bl max <length>
-	Soft maximum line length for splitting.
+	//Bl theme <theme>
+	Loads the specified theme folder found under themes/
 	//Bl delay <seconds>
 	Delay before closing promptless balloons.
+	//Bl move_closes
+	Toggles closing balloons on movement.
 	//Bl animate
 	Toggle advancement prompt animation.
 	//Bl help
@@ -76,7 +78,7 @@ Windower4 unofficial add-on Balloon
 	The display position can be adjusted with the mouse while the balloon is displayed.
 	Even if the log is currently hidden, the log will advance by one blank line due to waiting for the button.
 
-	The default font is now Segoe UI.
+	The default font is now Segoe UI for English, and Meiryo for Japanese.
 
 	[Most of this English text is machine translated up to ver 0.6.]
 -------------------------------------------------- ----------------------
@@ -108,10 +110,15 @@ Windower4 unofficial add-on Balloon
 		Rewrote the word wrapping function to obey a strict character count, maximum line length is now an actual maximum.
 		Improved ellipses and dash handling (no more "......" becoming "... ...").
 		Better Japanese language support, by making it switch fonts automatically when first loaded [English: Segoe UI, Japanese: Meiryo] (the font can still be changed in settings.xml afterwards).
+	ver 0.10 30/5/22 Theme support.
+		Rewrote a large chunk of the addon to support multiple themes, and live-loading of those themes.
+		Added FFXI and SNES FF themes.
+		Moved line length setting to each individual theme.xml
+		Per-character balloons still work, they now go under eg: themes/<theme>/characters/Iroha.png
 
 Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
 
-(or feel free to open an issue at https://github.com/StarlitGhost/Balloon if you have trouble with 0.9!)
+Or feel free to open an issue at https://github.com/StarlitGhost/Balloon if you have trouble with my fork!
 
 ■ Author
 	Hando
