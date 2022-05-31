@@ -217,11 +217,6 @@ function process_balloon(npc_text, mode)
 	if (S{'process', 'all'}[balloon.debug]) then print("Pre-process: " .. mes) end
 	if (S{'codes', 'all'}[balloon.debug]) then print("codes: " .. codes(mes)) end
 
-	if ( bl_debug == 1 ) then
-		print("Pre-process: " .. mes)
-		print("codes: " .. codes(mes))
-	end
-
 	--strip the default color code from the start of messages,
 	--it causes the first part of the message to get cut off somehow
 	local default_color = string.char(30)..string.char(1)
