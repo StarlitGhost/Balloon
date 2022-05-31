@@ -2,19 +2,21 @@
 <settings>
     <global>
         <NpcName>
-            <BGOffsetX>-8</BGOffsetX>
-            <BGOffsetY>-18</BGOffsetY>
+            <FontEnglish>Meiryo</FontEnglish>
+            <FontJapanese>Meiryo</FontJapanese>
+            <Size>13</Size>
+            <Width>360</Width>
+            <Height>43</Height>
+            <OffsetX>-8</OffsetX>
+            <OffsetY>-18</OffsetY>
+            <TextOffsetX>30</TextOffsetX>
+            <TextOffsetY>-13</TextOffsetY>
             <Color>
                 <Alpha>255</Alpha>
                 <Blue>255</Blue>
                 <Green>245</Green>
                 <Red>235</Red>
             </Color>
-            <FontEnglish>Meiryo</FontEnglish>
-            <FontJapanese>Meiryo</FontJapanese>
-            <OffsetX>30</OffsetX>
-            <OffsetY>-13</OffsetY>
-            <Size>13</Size>
             <Stroke>
                 <Alpha>200</Alpha>
                 <Blue>0</Blue>
@@ -24,20 +26,14 @@
             </Stroke>
         </NpcName>
         <Message>
-            <System>
-                <Color>
-                    <Alpha>255</Alpha>
-                    <Blue>255</Blue>
-                    <Green>255</Green>
-                    <Red>255</Red>
-                </Color>
-                <Gear>255,50,255</Gear>
-                <Items>100,255,100</Items>
-                <KeyItems>100,150,255</KeyItems>
-                <RoE>255,140,0</RoE>
-            </System>
             <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
+            <Size>10</Size>
+            <MaxLength>81</MaxLength>
+            <Width>610</Width>
+            <Height>128</Height>
+            <TextOffsetX>10</TextOffsetX>
+            <TextOffsetY>-8</TextOffsetY>
             <Dialogue>
                 <Color>
                     <Alpha>255</Alpha>
@@ -57,14 +53,22 @@
                     <Width>1</Width>
                 </Stroke>
             </Dialogue>
-            <OffsetX>10</OffsetX>
-            <OffsetY>-8</OffsetY>
-            <Size>10</Size>
-            <Width>660</Width>
-            <Height>142</Height>
-            <MaxLength>81</MaxLength>
+            <System>
+                <Color>
+                    <Alpha>255</Alpha>
+                    <Blue>255</Blue>
+                    <Green>255</Green>
+                    <Red>255</Red>
+                </Color>
+                <Gear>255,50,255</Gear>
+                <Items>100,255,100</Items>
+                <KeyItems>100,150,255</KeyItems>
+                <RoE>255,140,0</RoE>
+            </System>
         </Message>
         <Prompt>
+            <Width>26</Width>
+            <Height>16</Height>
             <OffsetX>575</OffsetX>
             <OffsetY>105</OffsetY>
         </Prompt>

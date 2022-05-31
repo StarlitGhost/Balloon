@@ -8,12 +8,11 @@ theme.apply = function(theme_settings)
     options.name_background = windower.addon_path .. 'themes/' .. theme_settings.name .. '/name-bg.png'
     options.prompt_image = windower.addon_path .. 'themes/' .. theme_settings.name .. '/advance-prompt.png'
 
-    options.background_width = theme_settings.message.width
-    options.background_height = theme_settings.message.height
-
     options.message = {}
-    options.message.offset_x = theme_settings.message.offsetx
-    options.message.offset_y = theme_settings.message.offsety
+    options.message.width = theme_settings.message.width
+    options.message.height = theme_settings.message.height
+    options.message.offset_x = theme_settings.message.textoffsetx
+    options.message.offset_y = theme_settings.message.textoffsety
     options.message.max_length = theme_settings.message.maxlength
     local message_languages = {English=theme_settings.message.fontenglish, Japanese=theme_settings.message.fontjapanese}
     options.message.font = message_languages[windower.ffxi.get_info().language]
@@ -53,10 +52,12 @@ theme.apply = function(theme_settings)
     end
 
     options.name = {}
-    options.name.offset_x = theme_settings.npcname.offsetx
-    options.name.offset_y = theme_settings.npcname.offsety
-    options.name.background_offset_x = theme_settings.npcname.bgoffsetx
-    options.name.background_offset_y = theme_settings.npcname.bgoffsety
+    options.name.width = theme_settings.npcname.width
+    options.name.height = theme_settings.npcname.height
+    options.name.offset_x = theme_settings.npcname.textoffsetx
+    options.name.offset_y = theme_settings.npcname.textoffsety
+    options.name.background_offset_x = theme_settings.npcname.offsetx
+    options.name.background_offset_y = theme_settings.npcname.offsety
     local name_languages = {English=theme_settings.npcname.fontenglish, Japanese=theme_settings.npcname.fontjapanese}
     options.name.font = name_languages[windower.ffxi.get_info().language]
     options.name.font_size = theme_settings.npcname.size
@@ -72,6 +73,8 @@ theme.apply = function(theme_settings)
         options.name.stroke_blue = theme_settings.npcname.stroke.blue
     end
 
+    options.prompt_width = theme_settings.prompt.width
+    options.prompt_height = theme_settings.prompt.height
     options.prompt_offset_x = theme_settings.prompt.offsetx
     options.prompt_offset_y = theme_settings.prompt.offsety
 

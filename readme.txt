@@ -65,6 +65,8 @@ Windower4 unofficial add-on Balloon
 	Display position initialization.
 	//Bl theme <theme>
 	Loads the specified theme folder found under themes/
+	//Bl scale <scale>
+	Scales the size of the balloon by a decimal (eg: 1.5)
 	//Bl delay <seconds>
 	Delay before closing promptless balloons.
 	//Bl move_closes
@@ -115,6 +117,8 @@ Windower4 unofficial add-on Balloon
 		Added FFXI and SNES FF themes.
 		Moved line length setting to each individual theme.xml
 		Per-character balloons still work, they now go under eg: themes/<theme>/characters/Iroha.png
+	ver 0.11 31/5/22 Scaling.
+		Added a scale command to increase/decrease the size of the balloon by a decimal multiplier, eg: 1.5
 
 Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
 

@@ -18,7 +18,8 @@ ui._dialogue_settings = {}
 ui._system_settings = {}
 ui._type = {}
 
-ui._theme = {}
+ui._theme = 'default'
+ui._scale = 1.0
 
 local function setup_image(image, path)
     image:path(path)
@@ -41,6 +42,7 @@ end
 
 function ui:load(settings, theme_options)
     self._theme = settings.Theme
+    self._scale = settings.Scale
 
     self._dialogue_settings.path = theme_options.balloon_background
     self._dialogue_settings.color = {}
@@ -87,20 +89,38 @@ function ui:load(settings, theme_options)
 
     self:position(settings, theme_options)
 
-    self.message_background:size(theme_options.background_width, theme_options.background_height)
     self.message_background:draggable(true)
 end
 
 function ui:position(settings, theme_options)
-    local x = settings.Position.X
-    local y = settings.Position.Y
+    self._scale = settings.Scale
+
+    local center_offset_x = theme_options.message.width / 2
+    local center_offset_y = theme_options.message.height / 2
+    local x = settings.Position.X - center_offset_x * settings.Scale
+    local y = settings.Position.Y - center_offset_y * settings.Scale
+    local name_bg_offset_x = theme_options.name.background_offset_x * settings.Scale
+    local name_bg_offset_y = theme_options.name.background_offset_y * settings.Scale
+    local prompt_offset_x = theme_options.prompt_offset_x * settings.Scale
+    local prompt_offset_y = theme_options.prompt_offset_y * settings.Scale
+    local message_text_offset_x = theme_options.message.offset_x * settings.Scale
+    local message_text_offset_y = theme_options.message.offset_y * settings.Scale
+    local name_text_offset_x = theme_options.name.offset_x * settings.Scale
+    local name_text_offset_y = theme_options.name.offset_y * settings.Scale
 
     self.message_background:pos(x, y)
-    self.name_background:pos(x + theme_options.name.background_offset_x, y + theme_options.name.background_offset_y)
-    self.prompt:pos(x + theme_options.prompt_offset_x, y + theme_options.prompt_offset_y)
+    self.name_background:pos(x + name_bg_offset_x, y + name_bg_offset_y)
+    self.prompt:pos(x + prompt_offset_x, y + prompt_offset_y)
 
-    self.message_text:pos(x + theme_options.message.offset_x, y + theme_options.message.offset_y)
-    self.name_text:pos(x + theme_options.name.offset_x, y + theme_options.name.offset_y)
+    self.message_text:pos(x + message_text_offset_x, y + message_text_offset_y)
+    self.name_text:pos(x + name_text_offset_x, y + name_text_offset_y)
+
+    self.message_background:size(theme_options.message.width * settings.Scale, theme_options.message.height * settings.Scale)
+    self.name_background:size(theme_options.name.width * settings.Scale, theme_options.name.height * settings.Scale)
+    self.prompt:size(theme_options.prompt_width * settings.Scale, theme_options.prompt_height * settings.Scale)
+
+    self.message_text:size(theme_options.message.font_size * settings.Scale)
+    self.name_text:size(theme_options.name.font_size * settings.Scale)
 end
 
 function ui:hide()
@@ -134,7 +154,7 @@ function ui:set_type(type)
     }
     self._type = types[type]
 
-    self.message_background:path(self._type.path)
+    self:update_message_bg(self._type.path)
     self.message_text:color(self._type.color.red, self._type.color.green, self._type.color.blue)
     self.message_text:stroke_transparency(self._type.stroke.alpha)
     self.message_text:stroke_color(self._type.stroke.red, self._type.stroke.green, self._type.stroke.blue)
@@ -147,12 +167,33 @@ function ui:set_character(name)
     -- set a custom balloon based on npc name, if an image for them exists
     local fname = windower.addon_path..'themes/'..self._theme..('/characters/%s.png'):format(name)
 	if windower.file_exists(fname) then
-		self.message_background:path(fname)
+		self:update_message_bg(fname)
+        return true
+    end
+    return false
+end
+
+function ui:update_message_bg(path)
+    if path ~= self.message_background:path() then
+        self.message_background:path(path)
     end
 end
 
 function ui:set_message(message)
     self.message_text:text(message)
+end
+
+local function smooth_sawtooth(time, frequency)
+	local x = time * frequency
+	return(-math.sin(x-math.sin(x)/2))
+end
+
+function ui:animate_prompt(frame_count, theme_options)
+    local amplitude = 2.5
+	local bounceOffset = smooth_sawtooth(frame_count/60, 6) * amplitude
+
+	local pos_y = self.message_background:pos_y() + (theme_options.prompt_offset_y + bounceOffset) * self._scale
+	self.prompt:pos_y(pos_y)
 end
 
 return ui

@@ -29,7 +29,7 @@
 --
 _addon.author = 'Hando / Modified for English client by Yuki / String code from Kenshi / Additional work by Ghosty'
 _addon.name = 'Balloon'
-_addon.version = '0.10'
+_addon.version = '0.11'
 _addon.commands = {'Balloon','Bl'}
 
 require('luau')
@@ -59,6 +59,7 @@ balloon.keydown = false
 balloon.mouse_on = false
 balloon.waiting_to_close = false
 balloon.frame_count = 0
+balloon.prev_path = nil
 
 -------------------------------------------------------------------------------
 
@@ -185,8 +186,9 @@ function process_balloon(npc_text, mode)
 	local npc_name = npc_prefix:sub(0,string.len(npc_prefix)-2)
 	npc_name = string.trim(npc_name)
 
-	ui:set_type(mode)
-	ui:set_character(npc_name)
+	if not ui:set_character(npc_name) then
+		ui:set_type(mode)
+	end
 
 	-- mode 1, blank log lines and visible balloon
 	if settings.DisplayMode == 1 then
@@ -394,6 +396,7 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon 2  	:吹き出し表示＆ログ表示 (Balloon display & log display)"
 		t[#t+1] = "     //Balloon reset :吹き出し位置初期化 (Initialize balloon position)"
 		t[#t+1] = "     //Balloon theme <theme> - loads the specified theme"
+		t[#t+1] = "     //Balloon scale <scale> - scales the size of the balloon by a decimal (eg: 1.5)"
 		t[#t+1] = "     //Balloon delay <seconds> - Delay before closing promptless balloons"
 		t[#t+1] = "     //Balloon animate - Toggle the advancement prompt indicator bouncing"
 		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement"
@@ -441,6 +444,16 @@ windower.register_event("addon command", function(command, ...)
 			log("current theme is '%s'":format(settings.Theme))
 		end
 
+	elseif command == 'scale' then
+		local old_scale = settings.Scale
+		if not args:empty() then
+			settings.Scale = tonumber(args[1])
+			ui:position(settings, theme_options)
+			log("scale changed from %d to %d":format(old_scale, settings.Scale))
+		else
+			log("current scale is %d (default: %d)":format(settings.Scale, defaults.Scale))
+		end
+
 	elseif command == 'delay' then
 		local old_delay = settings.NoPromptCloseDelay
 		if not args:empty() then
@@ -477,23 +490,20 @@ windower.register_event("addon command", function(command, ...)
 	config.save(settings)
 end)
 
-function smooth_sawtooth(time, frequency)
-	local x = time * frequency
-	return(-math.sin(x-math.sin(x)/2))
-end
-
 windower.register_event("prerender",function()
+	-- switching the message background image resets the scale, this fixes that
+	if ui.message_background:path() ~= balloon.prev_path then
+		ui:position(settings, theme_options)
+		balloon.prev_path = ui.message_background:path()
+	end
+
 	-- animate our text advance indicator bouncing up and down
 	balloon.frame_count = balloon.frame_count + 1
 	if balloon.frame_count > 60*math.pi*2 then balloon.frame_count = balloon.frame_count - 60*math.pi*2 end
 
 	if not balloon.on or not settings.AnimatePrompt then return end
 
-	local amplitude = 2.5
-	local bounceOffset = smooth_sawtooth(balloon.frame_count/60, 6) * amplitude
-
-	local pos_y = settings.Position.Y + theme_options.prompt_offset_y + bounceOffset
-	ui.prompt:pos_y(pos_y)
+	ui:animate_prompt(balloon.frame_count, theme_options)
 end)
 
 windower.register_event("mouse",function(type,x,y,delta,blocked)
@@ -512,8 +522,8 @@ windower.register_event("mouse",function(type,x,y,delta,blocked)
 end)
 
 function update()
-	settings.Position.X = ui.message_background:pos_x()
-	settings.Position.Y = ui.message_background:pos_y()
+	settings.Position.X = ui.message_background:pos_x() + ui.message_background:width() / 2
+	settings.Position.Y = ui.message_background:pos_y() + ui.message_background:height() / 2
 
 	ui:position(settings, theme_options)
 end

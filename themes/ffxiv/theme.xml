@@ -2,15 +2,15 @@
 <settings>
     <global>
         <NpcName>
-            <FontEnglish>DePixel</FontEnglish>
+            <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>9</Size>
-            <Width>254</Width>
+            <Size>12</Size>
+            <Width>360</Width>
             <Height>43</Height>
             <OffsetX>15</OffsetX>
-            <OffsetY>-30</OffsetY>
-            <TextOffsetX>25</TextOffsetX>
-            <TextOffsetY>-24</TextOffsetY>
+            <OffsetY>-18</OffsetY>
+            <TextOffsetX>45</TextOffsetX>
+            <TextOffsetY>-11</TextOffsetY>
             <Color>
                 <Alpha>255</Alpha>
                 <Blue>255</Blue>
@@ -26,25 +26,25 @@
             </Stroke>
         </NpcName>
         <Message>
-            <FontEnglish>DePixel</FontEnglish>
+            <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>8</Size>
-            <MaxLength>75</MaxLength>
+            <Size>10</Size>
+            <MaxLength>81</MaxLength>
             <Width>660</Width>
             <Height>142</Height>
-            <TextOffsetX>22</TextOffsetX>
-            <TextOffsetY>-5</TextOffsetY>
+            <TextOffsetX>45</TextOffsetX>
+            <TextOffsetY>-4</TextOffsetY>
             <Dialogue>
                 <Color>
                     <Alpha>255</Alpha>
-                    <Blue>255</Blue>
-                    <Green>255</Green>
-                    <Red>255</Red>
+                    <Blue>0</Blue>
+                    <Green>0</Green>
+                    <Red>0</Red>
                 </Color>
-                <Gear>255,50,255</Gear>
-                <Items>100,255,100</Items>
-                <KeyItems>100,150,255</KeyItems>
-                <RoE>255,140,0</RoE>
+                <Gear>177,26,177</Gear>
+                <Items>84,155,17</Items>
+                <KeyItems>97,127,217</KeyItems>
+                <RoE>173,72,0</RoE>
             </Dialogue>
             <System>
                 <Color>
@@ -60,10 +60,10 @@
             </System>
         </Message>
         <Prompt>
-            <Width>30</Width>
-            <Height>20</Height>
-            <OffsetX>620</OffsetX>
-            <OffsetY>120</OffsetY>
+            <Width>13</Width>
+            <Height>21</Height>
+            <OffsetX>605</OffsetX>
+            <OffsetY>90</OffsetY>
         </Prompt>
     </global>
 </settings>
