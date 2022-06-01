@@ -146,11 +146,12 @@ end
 
 function ui:set_type(type)
     local types = {
-        --[190] = self._system_settings,   -- system text
+        --[190] = self._system_settings, -- system text (always a duplicate of 151?)
         [150] = self._dialogue_settings, -- npc text
         [151] = self._system_settings, -- system text
-        [142] = self._dialogue_settings, -- ???
-        [144] = self._dialogue_settings  -- ???
+        [142] = self._dialogue_settings, -- battle text
+        [144] = self._dialogue_settings, -- prompt-less npc text
+        [146] = self._system_settings -- "You hear something moving to the east..."
     }
     self._type = types[type]
 

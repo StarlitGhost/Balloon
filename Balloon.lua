@@ -82,6 +82,8 @@ local function open()
 	end
 
 	ui:show()
+	--schedule an update to fix image scale if the balloon background has changed
+	coroutine.schedule(update,0.1)
 	balloon.on = true
 end
 
@@ -148,7 +150,7 @@ windower.register_event('incoming text',function(original,modified,original_mode
 	local endchar2 = string.byte(original:sub(string.len(original),string.len(original)),1)
 	local startchar1 = string.byte(original:sub(1,1),1)
 	local startchar2 = string.byte(original:sub(2,2),1)
-	if (endchar1 == 127 and endchar2 == 49 and not S{144}[original_mode]) or (startchar1 == 30 and startchar2 == 1) or (original_mode == 151) then
+	if (endchar1 == 127 and endchar2 == 49 and not S{142,144}[original_mode]) or (startchar1 == 30 and startchar2 == 1) or (original_mode == 151) then
 		noenter = false
 	end
 
