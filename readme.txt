@@ -119,6 +119,7 @@ Windower4 unofficial add-on Balloon
 		Per-character balloons still work, they now go under eg: themes/<theme>/characters/Iroha.png
 	ver 0.11 31/5/22 Scaling.
 		Added a scale command to increase/decrease the size of the balloon by a decimal multiplier, eg: 1.5
+	ver 0.11.1 2/6/22 Fixed image scaling when the balloon image changes.
 
 Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
 
