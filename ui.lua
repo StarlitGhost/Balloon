@@ -25,7 +25,7 @@ local function setup_image(image, path)
     image:path(path)
     image:repeat_xy(1, 1)
     image:draggable(false)
-    image:fit(true)
+    image:fit(false) -- this does the opposite of what you'd expect, and also doesn't adjust :size() to account for it
 end
 
 local function setup_text(text, text_options)

@@ -524,6 +524,3 @@ function update()
 
 	ui:position(settings, theme_options)
 end
-
-
-
