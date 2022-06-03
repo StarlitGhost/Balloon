@@ -1,20 +1,21 @@
 <?xml version="1.1" ?>
 <!-- Theme Author: StarlitGhost
-     DePixel is a free font found here:
-     https://www.dafont.com/depixel.font 
-     Specifically, DePixelHalbfett.ttf -->
+     Libre Franklin Medium is a free font that can be found here:
+     https://fonts.google.com/specimen/Libre+Franklin
+     It's the closest free font I could find to match with FFVII Remake.
+     The actual font that Remake uses is FOT-スキップ Std M https://eng.fontke.com/font/10602156/ -->
 <settings>
     <global>
         <NpcName>
-            <FontEnglish>DePixel</FontEnglish>
+            <FontEnglish>Libre Franklin Medium</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>9</Size>
-            <Width>254</Width>
-            <Height>43</Height>
-            <OffsetX>15</OffsetX>
-            <OffsetY>-30</OffsetY>
-            <TextOffsetX>25</TextOffsetX>
-            <TextOffsetY>-24</TextOffsetY>
+            <Size>13</Size>
+            <Width>200</Width>
+            <Height>2</Height>
+            <OffsetX>8</OffsetX>
+            <OffsetY>-1</OffsetY>
+            <TextOffsetX>2</TextOffsetX>
+            <TextOffsetY>-28</TextOffsetY>
             <Color>
                 <Alpha>255</Alpha>
                 <Blue>255</Blue>
@@ -22,22 +23,22 @@
                 <Red>255</Red>
             </Color>
             <Stroke>
-                <Alpha>200</Alpha>
+                <Alpha>150</Alpha>
                 <Blue>0</Blue>
                 <Green>0</Green>
                 <Red>0</Red>
-                <Width>2</Width>
+                <Width>1.5</Width>
             </Stroke>
         </NpcName>
         <Message>
-            <FontEnglish>DePixel</FontEnglish>
+            <FontEnglish>Libre Franklin Medium</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>8</Size>
-            <MaxLength>75</MaxLength>
-            <Width>660</Width>
-            <Height>142</Height>
-            <TextOffsetX>22</TextOffsetX>
-            <TextOffsetY>-5</TextOffsetY>
+            <Size>13</Size>
+            <MaxLength>81</MaxLength>
+            <Width>800</Width>
+            <Height>150</Height>
+            <TextOffsetX>50</TextOffsetX>
+            <TextOffsetY>-18</TextOffsetY>
             <Dialogue>
                 <Color>
                     <Alpha>255</Alpha>
@@ -49,6 +50,13 @@
                 <Items>100,255,100</Items>
                 <KeyItems>100,150,255</KeyItems>
                 <RoE>255,140,0</RoE>
+                <Stroke>
+                    <Alpha>150</Alpha>
+                    <Blue>0</Blue>
+                    <Green>0</Green>
+                    <Red>0</Red>
+                    <Width>1.5</Width>
+                </Stroke>
             </Dialogue>
             <System>
                 <Color>
@@ -64,10 +72,10 @@
             </System>
         </Message>
         <Prompt>
-            <Width>30</Width>
-            <Height>20</Height>
-            <OffsetX>620</OffsetX>
-            <OffsetY>120</OffsetY>
+            <Width>36</Width>
+            <Height>36</Height>
+            <OffsetX>750</OffsetX>
+            <OffsetY>0</OffsetY>
         </Prompt>
     </global>
 </settings>
