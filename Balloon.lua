@@ -38,13 +38,10 @@ texts = require('texts')
 images = require('images')
 
 local defaults = require('defaults')
-local settings = config.load(defaults)
-config.save(settings)
+local settings = {}
 
 local theme = require('theme')
-local theme_path = 'themes/' .. settings.Theme .. '/theme.xml'
-local theme_settings = config.load(theme_path, {['name']=settings.Theme})
-local theme_options = theme.apply(theme_settings)
+local theme_options = {}
 
 local ui = require('ui')
 
@@ -63,8 +60,19 @@ balloon.prev_path = nil
 
 -------------------------------------------------------------------------------
 
-local function initialize()
+local function apply_theme()
+	local theme_path = 'themes/' .. settings.Theme .. '/theme.xml'
+	local theme_settings = config.load(theme_path, {['name']=settings.Theme})
+	theme_options = theme.apply(theme_settings)
+
 	ui:load(settings, theme_options)
+end
+
+local function initialize()
+	settings = config.load(defaults)
+	config.save(settings)
+
+	apply_theme()
 
 	balloon.initialized = true
 end
@@ -83,17 +91,23 @@ local function open()
 
 	ui:show()
 	--schedule an update to fix image scale if the balloon background has changed
-	coroutine.schedule(update,0.1)
+	update_position:schedule(0.1)
 	balloon.on = true
 end
 
-windower.register_event('login',function()
+windower.register_event('load',function()
 	if windower.ffxi.get_info().logged_in then
 		initialize()
 	end
+end)
+
+windower.register_event('login',function()
+	-- re-load settings and theme 10 seconds after login,
+	-- so per-character settings are picked up properly
+	initialize:schedule(10)
 
 	--スレッド開始 (Thread start)
-	thread_id = coroutine.schedule(moving_check,0)
+	thread_id = moving_check:schedule(0)
 end)
 
 function moving_check()
@@ -420,7 +434,7 @@ windower.register_event("addon command", function(command, ...)
 		settings.Position.X = defaults.Position.X
 		settings.Position.Y = defaults.Position.Y
 		ui:position(settings, theme_options)
-		update()
+		update_position()
 		log("Balloon位置リセットしました。 (Balloon position reset.)")
 
 	elseif command == 'theme' then
@@ -433,9 +447,7 @@ windower.register_event("addon command", function(command, ...)
 
 			local old_theme = settings.Theme
 			settings.Theme = args[1]
-			local ts = config.load(tp, {['name']=settings.Theme})
-			theme_options = theme.apply(ts)
-			ui:load(settings, theme_options)
+			apply_theme()
 			log("changed theme from '%s' to '%s'":format(old_theme, settings.Theme))
 		else
 			log("current theme is '%s'":format(settings.Theme))
@@ -446,9 +458,9 @@ windower.register_event("addon command", function(command, ...)
 		if not args:empty() then
 			settings.Scale = tonumber(args[1])
 			ui:position(settings, theme_options)
-			log("scale changed from %d to %d":format(old_scale, settings.Scale))
+			log("scale changed from %f to %f":format(old_scale, settings.Scale))
 		else
-			log("current scale is %d (default: %d)":format(settings.Scale, defaults.Scale))
+			log("current scale is %f (default: %f)":format(settings.Scale, defaults.Scale))
 		end
 
 	elseif command == 'delay' then
@@ -462,7 +474,7 @@ windower.register_event("addon command", function(command, ...)
 
 	elseif command == 'animate' then
 		settings.AnimatePrompt = not settings.AnimatePrompt
-		update()
+		update_position()
 		log("animated text advance prompt - " .. (settings.AnimatePrompt and "on" or "off"))
 
 	elseif command == 'move_closes' then
@@ -514,11 +526,11 @@ windower.register_event("mouse",function(type,x,y,delta,blocked)
 		config.save(settings)
 	end
 	if balloon.mouse_on == true then
-		update()
+		update_position()
 	end
 end)
 
-function update()
+function update_position()
 	settings.Position.X = ui.message_background:pos_x() + ui.message_background:width() / 2
 	settings.Position.Y = ui.message_background:pos_y() + ui.message_background:height() / 2
 
