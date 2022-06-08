@@ -2,7 +2,7 @@
 <settings>
     <global>
         <NpcName>
-            <FontEnglish>Segoe UI</FontEnglish>
+            <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
             <Size>14</Size>
             <Width>360</Width>
@@ -26,7 +26,7 @@
             </Stroke>
         </NpcName>
         <Message>
-            <FontEnglish>Segoe UI</FontEnglish>
+            <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
             <Size>11</Size>
             <MaxLength>81</MaxLength>

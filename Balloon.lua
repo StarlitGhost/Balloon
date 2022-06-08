@@ -27,13 +27,15 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --
-_addon.author = 'Hando / Modified for English client by Yuki / String code from Kenshi / Additional work by Ghosty'
+_addon.author = 'Originally by Hando, English support added by Yuki & Kenshi, themes added by Ghosty'
 _addon.name = 'Balloon'
-_addon.version = '0.11.2'
-_addon.commands = {'Balloon','Bl'}
+_addon.version = '0.12b'
+_addon.commands = {'balloon','bl'}
 
 require('luau')
 chars = require('chat.chars')
+chars.cldquo = string.char(0x87, 0xB2)
+chars.crdquo = string.char(0x87, 0xB3)
 texts = require('texts')
 images = require('images')
 
@@ -44,6 +46,20 @@ local theme = require('theme')
 local theme_options = {}
 
 local ui = require('ui')
+
+local MODE = {}
+MODE.MESSAGE = 150
+MODE.SYSTEM = 151
+MODE.TIMED_MESSAGE = 144
+MODE.TIMED_BATTLE = 142
+
+local ENTER_KEY = 28
+local SCROLL_LOCK_KEY = 70
+
+local ZONE_OUT_PACKET = 0x0B
+local LEAVE_CONVERSATION_PACKET = 0x52
+
+local PROMPT_CHARS = string.char(0x7F,0x31)
 
 local balloon = {}
 balloon.initialized = false
@@ -57,42 +73,76 @@ balloon.mouse_on = false
 balloon.waiting_to_close = false
 balloon.frame_count = 0
 balloon.prev_path = nil
+balloon.close_timer = 0
+balloon.timer_running = false
+balloon.last_text = ''
+balloon.last_mode = 0
 
 -------------------------------------------------------------------------------
 
-local function apply_theme()
-	local theme_path = 'themes/' .. settings.Theme .. '/theme.xml'
-	local theme_settings = config.load(theme_path, {['name']=settings.Theme})
-	theme_options = theme.apply(theme_settings)
-
-	ui:load(settings, theme_options)
-end
-
-local function initialize()
+function initialize()
 	settings = config.load(defaults)
 	config.save(settings)
 
 	apply_theme()
 
+	timer:schedule(0)
 	balloon.initialized = true
 end
 
-local function close()
+function apply_theme()
+	local theme_path = 'themes/' .. settings.Theme .. '/theme.xml'
+	local theme_settings = config.load(theme_path, {['name']=settings.Theme})
+	theme_options = theme.apply(theme_settings)
+
+	ui:load(settings, theme_options)
+	if balloon.on then
+		process_balloon(balloon.last_text, balloon.last_mode)
+	end
+end
+
+function open(timed)
+	if not balloon.initialized then
+		initialize()
+	end
+
+	if timed then
+		balloon.close_timer = settings.NoPromptCloseDelay
+		ui.timer_text:text(''..balloon.close_timer)
+	end
+
+	ui:show(timed)
+
+	balloon.waiting_to_close = timed
+	balloon.on = true
+end
+
+function close()
 	ui:hide()
 
 	balloon.on = false
 	balloon.waiting_to_close = false
 end
 
-local function open()
-	if not balloon.initialized then
-		initialize()
-	end
-
-	ui:show()
-	--schedule an update to fix image scale if the balloon background has changed
-	update_position:schedule(0.1)
-	balloon.on = true
+function timer()
+	-- from Aelmar's npcbox https://www.ffxiah.com/forum/topic/56227/balloon-story-addon/2/#3627878
+	-- thanks for letting me use bits from it, Aelmar!
+    if balloon.timer_running then return end
+    balloon.timer_running = true
+    while true do
+		if balloon.waiting_to_close then
+			if balloon.close_timer == 0 then
+				close()
+			end
+			if balloon.close_timer > 0 then
+				ui.timer_text:text(balloon.close_timer..'')
+			end
+			if balloon.close_timer >= 0 then
+				balloon.close_timer = balloon.close_timer - 1
+			end
+		end
+        coroutine.sleep(1)
+    end
 end
 
 windower.register_event('load',function()
@@ -141,48 +191,35 @@ function moving_check()
 end
 
 windower.register_event('incoming chunk',function(id,original,modified,injected,blocked)
-	--会話中かの確認 (Check if you are in a conversation)
-	if (id == 82) then
-		if (S{'chunk', 'all'}[balloon.debug] ) then print("**chunk** id: " .. id,"original: " .. original) end
-		close()
-    elseif id == 0xB then
+	if S{'chunk', 'all'}[balloon.debug] then print("Chunk: " .. id .. " original: " .. original) end
+
+	--会話中かの確認 (Check if you have left a conversation)
+	if S{LEAVE_CONVERSATION_PACKET, ZONE_OUT_PACKET}[id] then
         close()
 	end
 end)
 
-windower.register_event('incoming text',function(original,modified,original_mode,modified_mode,blocked)
-	-- skip text modes that aren't NPC speech
-    if not ( S{150,151,142,144}[original_mode] ) then return end
-
+windower.register_event('incoming text',function(original,modified,mode,modified_mode,blocked)
 	-- print debug info
-	if (S{'codes', 'mode', 'all'}[balloon.debug]) then print("** Mode: " .. original_mode , "Text: '" .. original .."'") end
-	if (S{'codes', 'all'}[balloon.debug]) then print("codes: " .. codes(original)) end
+	if S{'codes', 'mode', 'all'}[balloon.debug] then print("Mode: " .. mode .. " Text: " .. original) end
 
-	-- detect whether messages have an 'enter' prompt or not
-	local noenter = true
-	local endchar1 = string.byte(original:sub(string.len(original)-1,string.len(original)-1),1)
-	local endchar2 = string.byte(original:sub(string.len(original),string.len(original)),1)
-	local startchar1 = string.byte(original:sub(1,1),1)
-	local startchar2 = string.byte(original:sub(2,2),1)
-	if (endchar1 == 127 and endchar2 == 49 and not S{142,144}[original_mode]) or (startchar1 == 30 and startchar2 == 1) or (original_mode == 151) then
-		noenter = false
+	-- skip text modes that aren't NPC speech
+    if not S{MODE.MESSAGE, MODE.SYSTEM, MODE.TIMED_BATTLE, MODE.TIMED_MESSAGE}[mode] then return end
+
+	-- blank prompt line that auto-continues itself,
+	-- usually used to clear a space for a scene change?
+	if S{string.char(0x7F,0x34,0x01),
+	     string.char(0x81,0x40,0x81,0x40,0x20,0x7F,0x34,0x01)}[original] then
+		close()
+		return
 	end
 
-	local result = original
-	if (settings.DisplayMode >= 1) then
-		result = process_balloon(original, original_mode)
+	-- print debug info
+	if S{'codes', 'all'}[balloon.debug] then print("codes: " .. codes(original)) end
 
-		if noenter then
-			ui.prompt:hide()
-			balloon.waiting_to_close = true
-			coroutine.sleep(settings.NoPromptCloseDelay)
-			if balloon.waiting_to_close then
-				close()
-			end
-		else
-			ui.prompt:show()
-			balloon.waiting_to_close = false
-		end
+	local result = original
+	if settings.DisplayMode >= 1 then
+		result = process_balloon(original, mode)
     end
     return(result)
 
@@ -193,13 +230,22 @@ function process_balloon(npc_text, mode)
 		initialize()
 	end
 
-	-- 発言者名の抽出 (Speaker name extraction)
-	local s,e = npc_text:find(".- : ")
-	local npc_prefix = ""
-	if s ~= nil then
-		if e < 32 and s > 0 then npc_prefix = npc_text:sub(s,e) end
+	balloon.last_text = npc_text
+	balloon.last_mode = mode
+
+	-- detect whether messages have a prompt button or not
+	local timed = true
+	if S{MODE.MESSAGE, MODE.SYSTEM}[mode] and npc_text:sub(-#PROMPT_CHARS) == PROMPT_CHARS then
+		timed = false
 	end
-	local npc_name = npc_prefix:sub(0,string.len(npc_prefix)-2)
+
+	-- 発言者名の抽出 (Speaker name extraction)
+	local start,_end = npc_text:find(".- : ")
+	local npc_prefix = ""
+	if start ~= nil then
+		if _end < 32 and start > 0 then npc_prefix = npc_text:sub(start,_end) end
+	end
+	local npc_name = npc_prefix:sub(0,#npc_prefix-2)
 	npc_name = string.trim(npc_name)
 
 	if not ui:set_character(npc_name) then
@@ -211,7 +257,7 @@ function process_balloon(npc_text, mode)
 		if npc_prefix == "" then
 			result = "" .. "\n"
 		else
-			result = npc_text:sub(string.len(npc_text)-1,string.len(npc_text))
+			result = npc_text:sub(#npc_text-1,#npc_text)
 		end
 	-- mode 2, visible log and balloon
 	elseif settings.DisplayMode == 2 then
@@ -230,45 +276,44 @@ function process_balloon(npc_text, mode)
 		mes = mes:gsub(npc_prefix:gsub("-","--"),"") --タルタル等対応 (Correspondence such as tartar)
 	end
 
-	if (S{'process', 'all'}[balloon.debug]) then print("Pre-process: " .. mes) end
-	if (S{'codes', 'all'}[balloon.debug]) then print("codes: " .. codes(mes)) end
+	if S{'process', 'all'}[balloon.debug] then print("Pre-process: " .. mes) end
+	if S{'codes', 'all'}[balloon.debug] then print("codes: " .. codes(mes)) end
 
 	--strip the default color code from the start of messages,
 	--it causes the first part of the message to get cut off somehow
-	local default_color = string.char(30)..string.char(1)
+	local default_color = string.char(30,1)
 	if string.sub(mes, 1, #default_color) == default_color then
 		mes = string.sub(mes, #default_color + 1)
 	end
 
 	-- split by newlines
-	local mess = split(mes,string.char(7))
+	local mess = split(mes,string.char(0x07))
 
 	local message = ""
 	for k,v in ipairs(mess) do
-		v = string.gsub(v, string.char(30)..string.char(1), "[BL_c1]") --color code 1 (black/reset)
-		v = string.gsub(v, string.char(30)..string.char(2), "[BL_c2]") --color code 2 (green/regular items)
-		v = string.gsub(v, string.char(30)..string.char(3), "[BL_c3]") --color code 3 (blue/key items)
-		v = string.gsub(v, string.char(30)..string.char(4), "[BL_c4]") --color code 4 (blue/???)
-		v = string.gsub(v, string.char(30)..string.char(5), "[BL_c5]") --color code 5 (magenta/equipment?)
-		v = string.gsub(v, string.char(30)..string.char(6), "[BL_c6]") --color code 6 (cyan/???)
-		v = string.gsub(v, string.char(30)..string.char(7), "[BL_c7]") --color code 7 (yellow/???)
-		v = string.gsub(v, string.char(30)..string.char(8), "[BL_c8]") --color code 8 (orange/RoE objectives?)
-		v = string.gsub(v, "1", "")
-		v = string.gsub(v, "4", "")
-		v = string.gsub(v, "", "")
-		v = string.gsub(v, "", "")
-		v = string.gsub(v, "6", "")
-		v = string.gsub(v, "^?", "")
-		v = string.gsub(v, "　　 ", "")
-		v = string.gsub(v, "", "")
-		v = string.gsub(v, "", "")
-		v = string.gsub(v, "", "")
-		v = string.gsub(v, "5", "")
+		v = string.gsub(v, string.char(0x1E,0x01), "[BL_c1]") --color code 1 (black/reset)
+		v = string.gsub(v, string.char(0x1E,0x02), "[BL_c2]") --color code 2 (green/regular items)
+		v = string.gsub(v, string.char(0x1E,0x03), "[BL_c3]") --color code 3 (blue/key items)
+		v = string.gsub(v, string.char(0x1E,0x04), "[BL_c4]") --color code 4 (blue/???)
+		v = string.gsub(v, string.char(0x1E,0x05), "[BL_c5]") --color code 5 (magenta/equipment?)
+		v = string.gsub(v, string.char(0x1E,0x06), "[BL_c6]") --color code 6 (cyan/???)
+		v = string.gsub(v, string.char(0x1E,0x07), "[BL_c7]") --color code 7 (yellow/???)
+		v = string.gsub(v, string.char(0x1E,0x08), "[BL_c8]") --color code 8 (orange/RoE objectives?)
+		v = string.gsub(v, string.char(0x7F,0x31), "")
+		v = string.gsub(v, string.char(0x7F,0x34), "")
+		v = string.gsub(v, string.char(0x7F,0x35), "")
+		v = string.gsub(v, string.char(0x7F,0x36), "")
+		v = string.gsub(v, string.char(0x01), "")
+		v = string.gsub(v, string.char(0x02), "")
+		v = string.gsub(v, string.char(0x03), "")
+		v = string.gsub(v, string.char(0x04), "")
+		v = string.gsub(v, string.char(0x06), "")
+		v = string.gsub(v, "^?([%w%.])", "%1")
 		v = string.gsub(v, '(%w)(%.%.%.+)([%w“])', "%1%2 %3") --add a space after elipses to allow better line splitting
 		v = string.gsub(v, '([%w”])%-%-([%w%p])', "%1-- %2") --same for double dashes
-		if (S{'wrap', 'all'}[balloon.debug]) then print("Pre-wrap: " .. v) end
+		if S{'wrap', 'all'}[balloon.debug] then print("Pre-wrap: " .. v) end
 		v = WrapText(v, theme_options.message.max_length)
-		if (S{'wrap', 'all'}[balloon.debug]) then print("Post-wrap: " .. v) end
+		if S{'wrap', 'all'}[balloon.debug] then print("Post-wrap: " .. v) end
 		v = " " .. v
 		v = string.gsub(v, "%[BL_c1]", "\\cs("..ui._type.reset..")")
 		v = string.gsub(v, "%[BL_c2]", "\\cs("..ui._type.items..")")
@@ -278,45 +323,43 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, "%[BL_c6]", "\\cs(0,159,173)")
 		v = string.gsub(v, "%[BL_c7]", "\\cs(156,149,19)")
 		v = string.gsub(v, "%[BL_c8]", "\\cs("..ui._type.roe..")")
+		--TODO: theme settings for these element colors
+		v = string.gsub(v, "%[BL_Fire]", "\\cs(255,0,0)Fire \\cr")
+		v = string.gsub(v, "%[BL_Ice]", "\\cs(0,255,255)Ice \\cr")
+		v = string.gsub(v, "%[BL_Wind]", "\\cs(0,255,0)Wind \\cr")
+		v = string.gsub(v, "%[BL_Earth]", "\\cs(153,76,0)Earth \\cr")
+		v = string.gsub(v, "%[BL_Lightning]", "\\cs(127,0,255)Lightning \\cr")
+		v = string.gsub(v, "%[BL_Water]", "\\cs(0,76,153)Water \\cr")
+		v = string.gsub(v, "%[BL_Light]", "\\cs(224,224,224)Light \\cr")
+		v = string.gsub(v, "%[BL_Dark]", "\\cs(82,82,82)Dark \\cr")
 		message = message .. ('\n%s'):format(v)
 	end
-	if (S{'process', 'all'}[balloon.debug]) then print("Final: " .. message) end
+	if S{'process', 'all'}[balloon.debug] then print("Final: " .. message) end
 
 	ui:set_message(message)
-	open()
+	open(timed)
 
 	return(result)
 end
 
 -- parses a string into char(decimal bytecode)
 function codes(str)
-	local teststr = ""
-	for i = 1, #str do
-		local c = string.byte(str:sub(i,i),1)
-		teststr = teststr .. (str:sub(i,i) .. "(" .. c .. ")")
-	end
-	return teststr
+	return (str:gsub('.', function (c)
+		return string.format('%s[%02X]', c, string.byte(c))
+	end))
 end
-
-windower.register_event('keyboard',function(dik,pressed,flags,blocked)
-	if windower.ffxi.get_info().chat_open or blocked then return end
-	if balloon.on == true then
-		--print("dik:", dik, "pressed:", pressed, "flags:", flags, "blocked:", blocked)
-		if dik == 28 and pressed and not balloon.keydown then
-			balloon.keydown = true
-			close()
-		end
-	end
-	if dik ==28 and not pressed then balloon.keydown = false end
-end)
 
 function SubCharactersPreShift(str)
 	local new_str = str
 	if S{'chars', 'all'}[balloon.debug] then print("Pre-charsub pre-shift: " .. new_str) end
-	new_str = string.gsub(new_str, string.char(129, 244), '[BL_note]') -- musical note
-	new_str = string.gsub(new_str, string.char(135, 178), '[BL_lquote]') -- left quote
-	new_str = string.gsub(new_str, string.char(135, 179), '[BL_rquote]') -- right quote
-	new_str = string.gsub(new_str, string.char(136, 105), '[BL_e_acute]') -- acute accented e
+	new_str = string.gsub(new_str, string.char(0x81, 0x40), '    ') -- tab
+	new_str = string.gsub(new_str, string.char(0x81, 0xF4), '[BL_note]') -- musical note
+	new_str = string.gsub(new_str, chars.bstar, '[BL_bstar]') -- empty star
+	new_str = string.gsub(new_str, chars.wstar, '[BL_wstar]') -- full star
+	new_str = string.gsub(new_str, chars.wave, '[BL_wave]') -- wide tilde
+	new_str = string.gsub(new_str, chars.cldquo, '[BL_cldquote]') -- centered left double quote
+	new_str = string.gsub(new_str, chars.crdquo, '[BL_crdquote]') -- centered right double quote
+	new_str = string.gsub(new_str, string.char(0x88, 0x69), '[BL_e_acute]') -- acute accented e
 	if S{'chars', 'all'}[balloon.debug] then print("Post-charsub pre-shift: " .. new_str) end
 	return new_str
 end
@@ -325,8 +368,11 @@ function SubCharactersPostShift(str)
 	local new_str = str
 	if S{'chars', 'all'}[balloon.debug] then print("Pre-charsub post-shift: " .. new_str) end
 	new_str = string.gsub(new_str, '%[BL_note]', '♪')
-	new_str = string.gsub(new_str, '%[BL_lquote]', '“')
-	new_str = string.gsub(new_str, '%[BL_rquote]', '”')
+	new_str = string.gsub(new_str, '%[BL_bstar]', '☆')
+	new_str = string.gsub(new_str, '%[BL_wstar]', '★')
+	new_str = string.gsub(new_str, '%[BL_wave]', '~')
+	new_str = string.gsub(new_str, '%[BL_cldquote]', '“')
+	new_str = string.gsub(new_str, '%[BL_crdquote]', '”')
 	new_str = string.gsub(new_str, '%[BL_e_acute]', 'é')
 	if S{'chars', 'all'}[balloon.debug] then print("Post-charsub post-shift: " .. new_str) end
 	return new_str
@@ -335,16 +381,15 @@ end
 function SubElements(str)
 	local new_str = str
 	if S{'elements', 'all'}[balloon.debug] then print("Pre-elementsub: " .. new_str) end
-	local col = string.char(30)..string.char(2)
-	local reset = string.char(30)..string.char(1)
-	new_str = string.gsub(new_str, string.char(239) .. "\"", col.."Earth "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "%$", col.."Water "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "&", col.."Dark "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "", col.."Fire "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. " ", col.."Ice "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "!", col.."Wind "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "#", col.."Lightning "..reset)
-	new_str = string.gsub(new_str, string.char(239) .. "%%", col.."Light "..reset)
+	new_str = string.gsub(new_str, string.char(0xEF,0x1F), "[BL_Fire]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x20), "[BL_Ice]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x21), "[BL_Wind]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x22), "[BL_Earth]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x23), "[BL_Lightning]")
+	-- extra 0x25 in these two to escape the characters
+	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x24), "[BL_Water]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x25), "[BL_Light]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x26), "[BL_Dark]")
 	if S{'elements', 'all'}[balloon.debug] then print("Post-elementsub: " .. new_str) end
 	return new_str
 end
@@ -411,7 +456,7 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon delay <seconds> - Delay before closing promptless balloons"
 		t[#t+1] = "     //Balloon animate - Toggle the advancement prompt indicator bouncing"
 		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement"
-		t[#t+1] = "     //Balloon debug 0/1/2 - Enable debug modes"
+		t[#t+1] = "     //Balloon debug off/all/mode/codes/chunk/process/wrap/chars/elements - Enable debug modes"
 		t[#t+1] = "     //Balloon test <name> : <message> - Display a test balloon"
 		t[#t+1] = "　"
 		for tk,tv in pairs(t) do
@@ -458,9 +503,9 @@ windower.register_event("addon command", function(command, ...)
 		if not args:empty() then
 			settings.Scale = tonumber(args[1])
 			ui:position(settings, theme_options)
-			log("scale changed from %f to %f":format(old_scale, settings.Scale))
+			log("scale changed from %.2f to %.2f":format(old_scale, settings.Scale))
 		else
-			log("current scale is %f (default: %f)":format(settings.Scale, defaults.Scale))
+			log("current scale is %.2f (default: %.2f)":format(settings.Scale, defaults.Scale))
 		end
 
 	elseif command == 'delay' then
@@ -470,7 +515,7 @@ windower.register_event("addon command", function(command, ...)
 		else
 			settings.NoPromptCloseDelay = defaults.NoPromptCloseDelay
 		end
-		log("delay before prompt-less balloons are closed changed: %s -> %s":format(old_delay, settings.NoPromptCloseDelay))
+		log("promptless close delay changed from %d to %d":format(old_delay, settings.NoPromptCloseDelay))
 
 	elseif command == 'animate' then
 		settings.AnimatePrompt = not settings.AnimatePrompt
@@ -491,8 +536,6 @@ windower.register_event("addon command", function(command, ...)
 
 	elseif command == 'test' then
 		process_balloon(args:concat(' '), 150)
-		coroutine.sleep(settings.NoPromptCloseDelay)
-		close()
 
 	end
 
@@ -500,12 +543,6 @@ windower.register_event("addon command", function(command, ...)
 end)
 
 windower.register_event("prerender",function()
-	-- switching the message background image resets the scale, this fixes that
-	if ui.message_background:path() ~= balloon.prev_path then
-		ui:position(settings, theme_options)
-		balloon.prev_path = ui.message_background:path()
-	end
-
 	-- animate our text advance indicator bouncing up and down
 	balloon.frame_count = balloon.frame_count + 1
 	if balloon.frame_count > 60*math.pi*2 then balloon.frame_count = balloon.frame_count - 60*math.pi*2 end
@@ -513,6 +550,25 @@ windower.register_event("prerender",function()
 	if not balloon.on or not settings.AnimatePrompt then return end
 
 	ui:animate_prompt(balloon.frame_count, theme_options)
+end)
+
+windower.register_event('keyboard',function(key_id,pressed,flags,blocked)
+	if windower.ffxi.get_info().chat_open or blocked then return end
+	if balloon.on == true then
+		if key_id == ENTER_KEY and pressed and not balloon.keydown then
+			balloon.keydown = true
+			close()
+		end
+		if key_id == SCROLL_LOCK_KEY and pressed and not balloon.keydown then
+			balloon.keydown = true
+			if not ui:hidden() then
+				ui:hide()
+			else
+				ui:show()
+			end
+		end
+	end
+	if S{ENTER_KEY, SCROLL_LOCK_KEY}[key_id] and not pressed then balloon.keydown = false end
 end)
 
 windower.register_event("mouse",function(type,x,y,delta,blocked)

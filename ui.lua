@@ -13,6 +13,9 @@ ui.prompt = images.new()
 
 ui.message_text = texts.new(text_setup)
 ui.name_text = texts.new(text_setup)
+ui.timer_text = texts.new(text_setup)
+
+ui._hidden = true
 
 ui._dialogue_settings = {}
 ui._system_settings = {}
@@ -86,6 +89,7 @@ function ui:load(settings, theme_options)
 
     setup_text(self.message_text, theme_options.message)
     setup_text(self.name_text, theme_options.name)
+    setup_text(self.timer_text, theme_options.message)
 
     self:position(settings, theme_options)
 
@@ -114,6 +118,7 @@ function ui:position(settings, theme_options)
 
     self.message_text:pos(x + message_text_offset_x, y + message_text_offset_y)
     self.name_text:pos(x + name_text_offset_x, y + name_text_offset_y)
+    self.timer_text:pos(x + prompt_offset_x, y + prompt_offset_y)
 
     self.message_background:size(theme_options.message.width * settings.Scale, theme_options.message.height * settings.Scale)
     self.name_background:size(theme_options.name.width * settings.Scale, theme_options.name.height * settings.Scale)
@@ -121,6 +126,7 @@ function ui:position(settings, theme_options)
 
     self.message_text:size(theme_options.message.font_size * settings.Scale)
     self.name_text:size(theme_options.name.font_size * settings.Scale)
+    self.timer_text:size(theme_options.message.font_size * settings.Scale)
 end
 
 function ui:hide()
@@ -130,18 +136,29 @@ function ui:hide()
 
     self.message_text:hide()
     self.name_text:hide()
+    self.timer_text:hide()
+
+    self._hidden = true
 end
 
-function ui:show()
+function ui:show(timed)
     self.message_background:show()
     self.message_text:show()
 
-    if self.name_text:text() ~= ' ' then
+    if not S{'', ' '}[self.name_text:text()] then
         self.name_background:show()
         self.name_text:show()
     end
 
-    self.prompt:show()
+    if not timed then
+        self.prompt:show()
+        self.timer_text:hide()
+    else
+        self.timer_text:show()
+        self.prompt:hide()
+    end
+
+    self._hidden = false
 end
 
 function ui:set_type(type)
@@ -160,6 +177,11 @@ function ui:set_type(type)
     self.message_text:stroke_transparency(self._type.stroke.alpha)
     self.message_text:stroke_color(self._type.stroke.red, self._type.stroke.green, self._type.stroke.blue)
     self.message_text:stroke_width(self._type.stroke.width)
+
+    self.timer_text:color(self._type.color.red, self._type.color.green, self._type.color.blue)
+    self.timer_text:stroke_transparency(self._type.stroke.alpha)
+    self.timer_text:stroke_color(self._type.stroke.red, self._type.stroke.green, self._type.stroke.blue)
+    self.timer_text:stroke_width(self._type.stroke.width)
 end
 
 function ui:set_character(name)
@@ -195,6 +217,10 @@ function ui:animate_prompt(frame_count, theme_options)
 
 	local pos_y = self.message_background:pos_y() + (theme_options.prompt_offset_y + bounceOffset) * self._scale
 	self.prompt:pos_y(pos_y)
+end
+
+function ui:hidden()
+    return self._hidden
 end
 
 return ui

@@ -64,6 +64,13 @@
                 <Items>100,255,100</Items>
                 <KeyItems>100,150,255</KeyItems>
                 <RoE>255,140,0</RoE>
+                <Stroke>
+                    <Alpha>150</Alpha>
+                    <Blue>0</Blue>
+                    <Green>0</Green>
+                    <Red>0</Red>
+                    <Width>1.5</Width>
+                </Stroke>
             </System>
         </Message>
         <Prompt>
