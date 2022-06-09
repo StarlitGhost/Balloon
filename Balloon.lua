@@ -29,7 +29,7 @@
 --
 _addon.author = 'Originally by Hando, English support added by Yuki & Kenshi, themes added by Ghosty'
 _addon.name = 'Balloon'
-_addon.version = '0.12'
+_addon.version = '0.13'
 _addon.commands = {'balloon','bl'}
 
 require('luau')
@@ -233,7 +233,7 @@ function process_balloon(npc_text, mode)
 	balloon.last_text = npc_text
 	balloon.last_mode = mode
 
-	-- detect whether messages have a prompt button or not
+	-- detect whether messages have a prompt button
 	local timed = true
 	if S{MODE.MESSAGE, MODE.SYSTEM}[mode] and npc_text:sub(-#PROMPT_CHARS) == PROMPT_CHARS then
 		timed = false
@@ -266,8 +266,7 @@ function process_balloon(npc_text, mode)
 	end
 
 	-- 発言 (Remark)
-	local mes = SubElements(npc_text)
-	mes = SubCharactersPreShift(mes)
+	local mes = SubCharactersPreShift(npc_text)
 	mes = windower.from_shift_jis(mes)
 	mes = SubCharactersPostShift(mes)
 
@@ -281,7 +280,7 @@ function process_balloon(npc_text, mode)
 
 	--strip the default color code from the start of messages,
 	--it causes the first part of the message to get cut off somehow
-	local default_color = string.char(30,1)
+	local default_color = string.char(0x1E,0x01)
 	if string.sub(mes, 1, #default_color) == default_color then
 		mes = string.sub(mes, #default_color + 1)
 	end
@@ -311,9 +310,9 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, "^?([%w%.])", "%1")
 		v = string.gsub(v, '(%w)(%.%.%.+)([%w“])', "%1%2 %3") --add a space after elipses to allow better line splitting
 		v = string.gsub(v, '([%w”])%-%-([%w%p])', "%1-- %2") --same for double dashes
-		if S{'wrap', 'all'}[balloon.debug] then print("Pre-wrap: " .. v) end
+
 		v = WrapText(v, theme_options.message.max_length)
-		if S{'wrap', 'all'}[balloon.debug] then print("Post-wrap: " .. v) end
+
 		v = " " .. v
 		v = string.gsub(v, "%[BL_c1]", "\\cs("..ui._type.reset..")")
 		v = string.gsub(v, "%[BL_c2]", "\\cs("..ui._type.items..")")
@@ -342,7 +341,7 @@ function process_balloon(npc_text, mode)
 	return(result)
 end
 
--- parses a string into char(decimal bytecode)
+-- parses a string into char[hex bytecode]
 function codes(str)
 	return (str:gsub('.', function (c)
 		return string.format('%s[%02X]', c, string.byte(c))
@@ -360,6 +359,17 @@ function SubCharactersPreShift(str)
 	new_str = string.gsub(new_str, chars.cldquo, '[BL_cldquote]') -- centered left double quote
 	new_str = string.gsub(new_str, chars.crdquo, '[BL_crdquote]') -- centered right double quote
 	new_str = string.gsub(new_str, string.char(0x88, 0x69), '[BL_e_acute]') -- acute accented e
+
+	-- element symbols
+	new_str = string.gsub(new_str, string.char(0xEF,0x1F), "[BL_Fire]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x20), "[BL_Ice]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x21), "[BL_Wind]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x22), "[BL_Earth]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x23), "[BL_Lightning]")
+	-- extra 0x25 in these two to escape the characters
+	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x24), "[BL_Water]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x25), "[BL_Light]")
+	new_str = string.gsub(new_str, string.char(0xEF,0x26), "[BL_Dark]")
 	if S{'chars', 'all'}[balloon.debug] then print("Post-charsub pre-shift: " .. new_str) end
 	return new_str
 end
@@ -378,22 +388,6 @@ function SubCharactersPostShift(str)
 	return new_str
 end
 
-function SubElements(str)
-	local new_str = str
-	if S{'elements', 'all'}[balloon.debug] then print("Pre-elementsub: " .. new_str) end
-	new_str = string.gsub(new_str, string.char(0xEF,0x1F), "[BL_Fire]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x20), "[BL_Ice]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x21), "[BL_Wind]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x22), "[BL_Earth]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x23), "[BL_Lightning]")
-	-- extra 0x25 in these two to escape the characters
-	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x24), "[BL_Water]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x25,0x25), "[BL_Light]")
-	new_str = string.gsub(new_str, string.char(0xEF,0x26), "[BL_Dark]")
-	if S{'elements', 'all'}[balloon.debug] then print("Post-elementsub: " .. new_str) end
-	return new_str
-end
-
 function Tokenize(str)
 	local result = {}
 	for word in str:gmatch("%S+") do
@@ -403,6 +397,8 @@ function Tokenize(str)
 end
 
 function WrapText(str, length)
+	if S{'wrap', 'all'}[balloon.debug] then print("Pre-wrap: " .. str) end
+
 	local line_length = length+1
 	local length_left = line_length
 	local result = {}
@@ -420,7 +416,11 @@ function WrapText(str, length)
 	end
 
 	table.insert(result, table.concat(line, ' '))
-	return table.concat(result, '\n ')
+	local new_str = table.concat(result, '\n ')
+
+	if S{'wrap', 'all'}[balloon.debug] then print("Post-wrap: " .. new_str) end
+
+	return new_str
 end
 
 function split(str, delim)
@@ -453,11 +453,12 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon reset :吹き出し位置初期化 (Initialize balloon position)"
 		t[#t+1] = "     //Balloon theme <theme> - loads the specified theme"
 		t[#t+1] = "     //Balloon scale <scale> - scales the size of the balloon by a decimal (eg: 1.5)"
-		t[#t+1] = "     //Balloon delay <seconds> - Delay before closing promptless balloons"
-		t[#t+1] = "     //Balloon animate - Toggle the advancement prompt indicator bouncing"
-		t[#t+1] = "     //Balloon move_closes - Toggle balloon auto-close on player movement"
-		t[#t+1] = "     //Balloon debug off/all/mode/codes/chunk/process/wrap/chars/elements - Enable debug modes"
-		t[#t+1] = "     //Balloon test <name> : <message> - Display a test balloon"
+		t[#t+1] = "     //Balloon delay <seconds> - delay before closing promptless balloons"
+		t[#t+1] = "     //Balloon text_speed <chars> - speed that text is displayed, in characters per frame"
+		t[#t+1] = "     //Balloon animate - toggle the advancement prompt indicator bouncing"
+		t[#t+1] = "     //Balloon move_closes - toggle balloon auto-close on player movement"
+		t[#t+1] = "     //Balloon debug off/all/mode/codes/chunk/process/wrap/chars/elements - enable debug modes"
+		t[#t+1] = "     //Balloon test <name> : <message> - display a test balloon"
 		t[#t+1] = "　"
 		for tk,tv in pairs(t) do
 			windower.add_to_chat(207, windower.to_shift_jis(tv))
@@ -495,7 +496,7 @@ windower.register_event("addon command", function(command, ...)
 			apply_theme()
 			log("changed theme from '%s' to '%s'":format(old_theme, settings.Theme))
 		else
-			log("current theme is '%s'":format(settings.Theme))
+			log("current theme is '%s' (default: %s)":format(settings.Theme, defaults.Theme))
 		end
 
 	elseif command == 'scale' then
@@ -512,10 +513,19 @@ windower.register_event("addon command", function(command, ...)
 		local old_delay = settings.NoPromptCloseDelay
 		if not args:empty() then
 			settings.NoPromptCloseDelay = tonumber(args[1])
+			log("promptless close delay changed from %d to %d":format(old_delay, settings.NoPromptCloseDelay))
 		else
-			settings.NoPromptCloseDelay = defaults.NoPromptCloseDelay
+			log("current promptless close delay is %d (default: %d)":format(old_delay, defaults.NoPromptCloseDelay))
 		end
-		log("promptless close delay changed from %d to %d":format(old_delay, settings.NoPromptCloseDelay))
+
+	elseif command == 'text_speed' then
+		local old_speed = settings.TextSpeed
+		if not args:empty() then
+			settings.TextSpeed = tonumber(args[1])
+			log("text speed changed from %d to %d":format(old_speed, settings.TextSpeed))
+		else
+			log("current text speed is %d (default: %d)":format(settings.TextSpeed, defaults.TextSpeed))
+		end
 
 	elseif command == 'animate' then
 		settings.AnimatePrompt = not settings.AnimatePrompt
@@ -547,9 +557,12 @@ windower.register_event("prerender",function()
 	balloon.frame_count = balloon.frame_count + 1
 	if balloon.frame_count > 60*math.pi*2 then balloon.frame_count = balloon.frame_count - 60*math.pi*2 end
 
-	if not balloon.on or not settings.AnimatePrompt then return end
-
+	if balloon.on then
+		if settings.AnimatePrompt then
 	ui:animate_prompt(balloon.frame_count, theme_options)
+		end
+		ui:animate_text_display(settings.TextSpeed)
+	end
 end)
 
 windower.register_event('keyboard',function(key_id,pressed,flags,blocked)

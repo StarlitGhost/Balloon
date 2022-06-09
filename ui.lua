@@ -16,6 +16,8 @@ ui.name_text = texts.new(text_setup)
 ui.timer_text = texts.new(text_setup)
 
 ui._hidden = true
+ui._current_text = ''
+ui._chars_shown = 0
 
 ui._dialogue_settings = {}
 ui._system_settings = {}
@@ -203,7 +205,9 @@ function ui:update_message_bg(path)
 end
 
 function ui:set_message(message)
-    self.message_text:text(message)
+    self._current_text = message
+    self._chars_shown = 0
+    self.message_text:text('')
 end
 
 local function smooth_sawtooth(time, frequency)
@@ -217,6 +221,13 @@ function ui:animate_prompt(frame_count, theme_options)
 
 	local pos_y = self.message_background:pos_y() + (theme_options.prompt.offset_y + bounceOffset) * self._scale
 	self.prompt:pos_y(pos_y)
+end
+
+function ui:animate_text_display(chars_per_frame)
+    if self._chars_shown >= #self._current_text then return end
+
+    self._chars_shown = self._chars_shown + (chars_per_frame == 0 and 1000 or chars_per_frame)
+    self.message_text:text(self._current_text:sub(0,self._chars_shown))
 end
 
 function ui:hidden()

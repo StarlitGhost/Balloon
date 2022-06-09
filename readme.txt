@@ -125,12 +125,12 @@ Windower4 unofficial add-on Balloon
 		Added a new theme based on the subtitles in FFVII Remake.
 	ver 0.12 8/6/22 Timer.
 		Added a visible countdown timer for prompt-less balloons.
+		Added animated text display.
 		Made the scroll lock key hide the balloon, like it does the vanilla UI.
 		A *lot* of code cleanup.
 
-Send any feedback to Yuki in #unofficial-addons channel on Windower Discord.
-
-Or feel free to open an issue at https://github.com/StarlitGhost/Balloon if you have trouble with my fork!
+Send any feedback/questions to Ghosty in the #unofficial-addons channel on the Windower Discord.
+Or open an issue on the GitHub repo at https://github.com/StarlitGhost/Balloon
 
 ■ Author
 	Hando
