@@ -123,9 +123,9 @@ Windower4 unofficial add-on Balloon
 		Fixed image scaling when the balloon image changes.
 	ver 0.11.2 3/6/22 FFVII-R Subtitle Theme.
 		Added a new theme based on the subtitles in FFVII Remake.
-	ver 0.12 8/6/22 Timer.
-		Added a visible countdown timer for prompt-less balloons.
+	ver 0.12 8/6/22 Animated text display.
 		Added animated text display.
+		Added a visible countdown timer for prompt-less balloons.
 		Made the scroll lock key hide the balloon, like it does the vanilla UI.
 		A *lot* of code cleanup.
 
