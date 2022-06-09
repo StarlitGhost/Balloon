@@ -29,7 +29,7 @@
             <FontEnglish>Libre Franklin Medium</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
             <Size>13</Size>
-            <MaxLength>81</MaxLength>
+            <MaxLength>75</MaxLength>
             <Width>800</Width>
             <Height>150</Height>
             <TextOffsetX>50</TextOffsetX>
@@ -53,25 +53,6 @@
                     <Width>1.5</Width>
                 </Stroke>
             </Dialogue>
-            <System>
-                <Color>
-                    <Alpha>255</Alpha>
-                    <Blue>255</Blue>
-                    <Green>255</Green>
-                    <Red>255</Red>
-                </Color>
-                <Gear>255,50,255</Gear>
-                <Items>100,255,100</Items>
-                <KeyItems>100,150,255</KeyItems>
-                <RoE>255,140,0</RoE>
-                <Stroke>
-                    <Alpha>150</Alpha>
-                    <Blue>0</Blue>
-                    <Green>0</Green>
-                    <Red>0</Red>
-                    <Width>1.5</Width>
-                </Stroke>
-            </System>
         </Message>
         <Prompt>
             <Width>36</Width>
@@ -79,5 +60,9 @@
             <OffsetX>750</OffsetX>
             <OffsetY>0</OffsetY>
         </Prompt>
+        <Timer>
+            <TextOffsetX>750</TextOffsetX>
+            <TextOffsetY>0</TextOffsetY>
+        </Timer>
     </global>
 </settings>

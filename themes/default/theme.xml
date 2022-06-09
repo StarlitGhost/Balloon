@@ -4,10 +4,10 @@
         <NpcName>
             <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>14</Size>
+            <Size>12</Size>
             <Width>360</Width>
             <Height>43</Height>
-            <OffsetX>15</OffsetX>
+            <OffsetX>10</OffsetX>
             <OffsetY>-20</OffsetY>
             <TextOffsetX>45</TextOffsetX>
             <TextOffsetY>-15</TextOffsetY>
@@ -28,7 +28,7 @@
         <Message>
             <FontEnglish>Meiryo</FontEnglish>
             <FontJapanese>Meiryo</FontJapanese>
-            <Size>11</Size>
+            <Size>10</Size>
             <MaxLength>81</MaxLength>
             <Width>647</Width>
             <Height>127</Height>
@@ -65,5 +65,22 @@
             <OffsetX>600</OffsetX>
             <OffsetY>90</OffsetY>
         </Prompt>
+        <Timer>
+            <TextOffsetX>590</TextOffsetX>
+            <TextOffsetY>90</TextOffsetY>
+            <Color>
+                <Alpha>255</Alpha>
+                <Blue>255</Blue>
+                <Green>255</Green>
+                <Red>255</Red>
+            </Color>
+            <Stroke>
+                <Alpha>150</Alpha>
+                <Blue>0</Blue>
+                <Green>0</Green>
+                <Red>0</Red>
+                <Width>1.5</Width>
+            </Stroke>
+        </Timer>
     </global>
 </settings>

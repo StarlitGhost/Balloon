@@ -65,5 +65,9 @@
             <OffsetX>620</OffsetX>
             <OffsetY>120</OffsetY>
         </Prompt>
+        <Timer>
+            <TextOffsetX>620</TextOffsetX>
+            <TextOffsetY>110</TextOffsetY>
+        </Timer>
     </global>
 </settings>

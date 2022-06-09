@@ -53,18 +53,6 @@
                     <Width>1</Width>
                 </Stroke>
             </Dialogue>
-            <System>
-                <Color>
-                    <Alpha>255</Alpha>
-                    <Blue>255</Blue>
-                    <Green>255</Green>
-                    <Red>255</Red>
-                </Color>
-                <Gear>255,50,255</Gear>
-                <Items>100,255,100</Items>
-                <KeyItems>100,150,255</KeyItems>
-                <RoE>255,140,0</RoE>
-            </System>
         </Message>
         <Prompt>
             <Width>26</Width>
@@ -72,5 +60,9 @@
             <OffsetX>575</OffsetX>
             <OffsetY>105</OffsetY>
         </Prompt>
+        <Timer>
+            <TextOffsetX>580</TextOffsetX>
+            <TextOffsetY>100</TextOffsetY>
+        </Timer>
     </global>
 </settings>
