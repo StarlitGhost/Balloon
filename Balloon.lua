@@ -52,6 +52,7 @@ MODE.MESSAGE = 150
 MODE.SYSTEM = 151
 MODE.TIMED_MESSAGE = 144
 MODE.TIMED_BATTLE = 142
+MODE.CUTSCENE_EMOTE = 15
 
 local ENTER_KEY = 28
 local SCROLL_LOCK_KEY = 70
@@ -195,7 +196,7 @@ windower.register_event('incoming chunk',function(id,original,modified,injected,
 
 	--会話中かの確認 (Check if you have left a conversation)
 	if S{LEAVE_CONVERSATION_PACKET, ZONE_OUT_PACKET}[id] then
-        close()
+		close()
 	end
 end)
 
@@ -204,7 +205,7 @@ windower.register_event('incoming text',function(original,modified,mode,modified
 	if S{'codes', 'mode', 'all'}[balloon.debug] then print("Mode: " .. mode .. " Text: " .. original) end
 
 	-- skip text modes that aren't NPC speech
-    if not S{MODE.MESSAGE, MODE.SYSTEM, MODE.TIMED_BATTLE, MODE.TIMED_MESSAGE}[mode] then return end
+    if not S{MODE.MESSAGE, MODE.SYSTEM, MODE.TIMED_BATTLE, MODE.TIMED_MESSAGE, MODE.CUTSCENE_EMOTE}[mode] then return end
 
 	-- blank prompt line that auto-continues itself,
 	-- usually used to clear a space for a scene change?
@@ -559,7 +560,7 @@ windower.register_event("prerender",function()
 
 	if balloon.on then
 		if settings.AnimatePrompt then
-	ui:animate_prompt(balloon.frame_count, theme_options)
+			ui:animate_prompt(balloon.frame_count, theme_options)
 		end
 		ui:animate_text_display(settings.TextSpeed)
 	end

@@ -174,7 +174,8 @@ function ui:set_type(type)
         [151] = self._system_settings, -- system text
         [142] = self._dialogue_settings, -- battle text
         [144] = self._dialogue_settings, -- prompt-less npc text
-        [146] = self._system_settings -- "You hear something moving to the east..."
+        [146] = self._system_settings, -- "You hear something moving to the east..."
+        [15] = self._system_settings, -- cutscene emote
     }
     self._type = types[type]
 
