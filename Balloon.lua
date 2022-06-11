@@ -209,8 +209,7 @@ windower.register_event('incoming text',function(original,modified,mode,modified
 
 	-- blank prompt line that auto-continues itself,
 	-- usually used to clear a space for a scene change?
-	if S{string.char(0x7F,0x34,0x01),
-	     string.char(0x81,0x40,0x81,0x40,0x20,0x7F,0x34,0x01)}[original] then
+	if original:endswith(string.char(0x7F,0x34,0x01)) then
 		close()
 		return
 	end
@@ -588,9 +587,11 @@ end)
 windower.register_event("mouse",function(type,x,y,delta,blocked)
     if not ui.message_background:hover(x, y) then return false end
 
+	-- press
 	if type == 1 then
 		balloon.mouse_on = true
 	end
+	-- release
 	if type == 2 then
 		balloon.mouse_on = false
 		config.save(settings)
