@@ -78,6 +78,7 @@ balloon.close_timer = 0
 balloon.timer_running = false
 balloon.last_text = ''
 balloon.last_mode = 0
+balloon.movement_thread = nil
 
 -------------------------------------------------------------------------------
 
@@ -87,7 +88,12 @@ function initialize()
 
 	apply_theme()
 
+	--スレッド開始 (Thread start)
 	timer:schedule(0)
+	if settings.MovementCloses then
+		balloon.movement_thread = moving_check:schedule(0)
+	end
+
 	balloon.initialized = true
 end
 
@@ -156,9 +162,6 @@ windower.register_event('login',function()
 	-- re-load settings and theme 10 seconds after login,
 	-- so per-character settings are picked up properly
 	initialize:schedule(10)
-
-	--スレッド開始 (Thread start)
-	thread_id = moving_check:schedule(0)
 end)
 
 function moving_check()
@@ -534,6 +537,14 @@ windower.register_event("addon command", function(command, ...)
 
 	elseif command == 'move_closes' then
 		settings.MovementCloses = not settings.MovementCloses
+		if settings.MovementCloses then
+			balloon.movement_thread = moving_check:schedule(0)
+		else
+			if balloon.movement_thread ~= nil and coroutine.status(balloon.movement_thread) ~= 'dead' then
+				coroutine.close(balloon.movement_thread)
+			end
+		end
+
 		log("close balloons on player movement - " .. (settings.MovementCloses and "on" or "off"))
 
 	elseif command == 'debug' then
