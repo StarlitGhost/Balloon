@@ -73,6 +73,8 @@ Windower4 unofficial add-on Balloon
 	Toggles closing balloons on movement.
 	//Bl animate
 	Toggle advancement prompt animation.
+	//Bl portrait
+	Toggle character portraits.
 	//Bl help
 	Help display
 
@@ -128,6 +130,11 @@ Windower4 unofficial add-on Balloon
 		Added a visible countdown timer for prompt-less balloons.
 		Made the scroll lock key hide the balloon, like it does the vanilla UI.
 		A *lot* of code cleanup.
+	ver 0.13 13/6/22 Character portraits.
+		Added character portraits for most of the main story NPCs.
+		Toggleable globally with //bl portrait.
+		Themes can choose to include support for them or not.
+		Themes can also have a slightly different layout with/without portraits.
 
 Send any feedback/questions to Ghosty in the #unofficial-addons channel on the Windower Discord.
 Or open an issue on the GitHub repo at https://github.com/StarlitGhost/Balloon
