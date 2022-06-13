@@ -64,5 +64,11 @@
             <TextOffsetX>580</TextOffsetX>
             <TextOffsetY>100</TextOffsetY>
         </Timer>
+        <Portrait>
+            <Width>96</Width>
+            <Height>96</Height>
+            <OffsetX>0</OffsetX>
+            <OffsetY>-96</OffsetY>
+        </Portrait>
     </global>
 </settings>

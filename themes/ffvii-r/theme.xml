@@ -45,6 +45,7 @@
                 <Items>100,255,100</Items>
                 <KeyItems>100,150,255</KeyItems>
                 <RoE>255,140,0</RoE>
+                <Emote>125,175,255</Emote>
                 <Stroke>
                     <Alpha>150</Alpha>
                     <Blue>0</Blue>
@@ -64,5 +65,11 @@
             <TextOffsetX>750</TextOffsetX>
             <TextOffsetY>0</TextOffsetY>
         </Timer>
+        <Portrait>
+            <Width>96</Width>
+            <Height>96</Height>
+            <OffsetX>0</OffsetX>
+            <OffsetY>-95</OffsetY>
+        </Portrait>
     </global>
 </settings>

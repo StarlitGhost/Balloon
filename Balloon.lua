@@ -29,7 +29,7 @@
 --
 _addon.author = 'Originally by Hando, English support added by Yuki & Kenshi, themes added by Ghosty'
 _addon.name = 'Balloon'
-_addon.version = '0.12'
+_addon.version = '0.13'
 _addon.commands = {'balloon','bl'}
 
 require('luau')
@@ -60,7 +60,11 @@ local SCROLL_LOCK_KEY = 70
 local ZONE_OUT_PACKET = 0x0B
 local LEAVE_CONVERSATION_PACKET = 0x52
 
+-- 0x31-0x33 and 0x37 all appear the same
 local PROMPT_CHARS = string.char(0x7F,0x31)
+-- the 0x01 in this is the number of seconds before the prompt continues itself
+-- 0x34-0x36 seem to do the same thing
+local AUTO_PROMPT_CHARS = string.char(0x7F,0x34,0x01)
 
 local balloon = {}
 balloon.initialized = false
@@ -195,7 +199,7 @@ function moving_check()
 end
 
 windower.register_event('incoming chunk',function(id,original,modified,injected,blocked)
-	if S{'chunk', 'all'}[balloon.debug] then print("Chunk: " .. id .. " original: " .. original) end
+	if S{'chunk', 'all'}[balloon.debug] then print("Chunk: " .. '0x%02X':format(id) .. " original: " .. original) end
 
 	--会話中かの確認 (Check if you have left a conversation)
 	if S{LEAVE_CONVERSATION_PACKET, ZONE_OUT_PACKET}[id] then
@@ -212,7 +216,7 @@ windower.register_event('incoming text',function(original,modified,mode,modified
 
 	-- blank prompt line that auto-continues itself,
 	-- usually used to clear a space for a scene change?
-	if original:endswith(string.char(0x7F,0x34,0x01)) then
+	if original:endswith(AUTO_PROMPT_CHARS) then
 		close()
 		return
 	end
@@ -301,23 +305,27 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, string.char(0x1E,0x06), "[BL_c6]") --color code 6 (cyan/???)
 		v = string.gsub(v, string.char(0x1E,0x07), "[BL_c7]") --color code 7 (yellow/???)
 		v = string.gsub(v, string.char(0x1E,0x08), "[BL_c8]") --color code 8 (orange/RoE objectives?)
-		v = string.gsub(v, string.char(0x7F,0x31), "")
+		v = string.gsub(v, string.char(0x1F,0x0F), "") --cutscene emote color code (handled by the message type instead)
+		v = string.gsub(v, PROMPT_CHARS, "")
+		-- these are the auto-prompt characters
 		v = string.gsub(v, string.char(0x7F,0x34), "")
 		v = string.gsub(v, string.char(0x7F,0x35), "")
 		v = string.gsub(v, string.char(0x7F,0x36), "")
+		-- these are often the timings for the auto-prompt
 		v = string.gsub(v, string.char(0x01), "")
 		v = string.gsub(v, string.char(0x02), "")
 		v = string.gsub(v, string.char(0x03), "")
 		v = string.gsub(v, string.char(0x04), "")
+		v = string.gsub(v, string.char(0x05), "")
 		v = string.gsub(v, string.char(0x06), "")
 		v = string.gsub(v, "^?([%w%.])", "%1")
 		v = string.gsub(v, '(%w)(%.%.%.+)([%w“])', "%1%2 %3") --add a space after elipses to allow better line splitting
 		v = string.gsub(v, '([%w”])%-%-([%w%p])', "%1-- %2") --same for double dashes
 
-		v = WrapText(v, theme_options.message.max_length)
+		v = ui:wrap_text(v)
 
 		v = " " .. v
-		v = string.gsub(v, "%[BL_c1]", "\\cs("..ui._type.reset..")")
+		v = string.gsub(v, "%[BL_c1]", "\\cr")
 		v = string.gsub(v, "%[BL_c2]", "\\cs("..ui._type.items..")")
 		v = string.gsub(v, "%[BL_c3]", "\\cs("..ui._type.keyitems..")")
 		v = string.gsub(v, "%[BL_c4]", "\\cs("..ui._type.keyitems..")")
@@ -391,41 +399,6 @@ function SubCharactersPostShift(str)
 	return new_str
 end
 
-function Tokenize(str)
-	local result = {}
-	for word in str:gmatch("%S+") do
-		result[#result+1] = word
-	end
-	return result
-end
-
-function WrapText(str, length)
-	if S{'wrap', 'all'}[balloon.debug] then print("Pre-wrap: " .. str) end
-
-	local line_length = length+1
-	local length_left = line_length
-	local result = {}
-	local line = {}
-
-	for _, word in ipairs(Tokenize(str)) do
-		if #word+1 > length_left then
-			table.insert(result, table.concat(line, ' '))
-			line = {word}
-			length_left = line_length - #word
-		else
-			table.insert(line, word)
-			length_left = length_left - (#word + 1)
-		end
-	end
-
-	table.insert(result, table.concat(line, ' '))
-	local new_str = table.concat(result, '\n ')
-
-	if S{'wrap', 'all'}[balloon.debug] then print("Post-wrap: " .. new_str) end
-
-	return new_str
-end
-
 function split(str, delim)
     -- Eliminate bad cases...
     if string.find(str, delim) == nil then
@@ -459,6 +432,7 @@ windower.register_event("addon command", function(command, ...)
 		t[#t+1] = "     //Balloon delay <seconds> - delay before closing promptless balloons"
 		t[#t+1] = "     //Balloon text_speed <chars> - speed that text is displayed, in characters per frame"
 		t[#t+1] = "     //Balloon animate - toggle the advancement prompt indicator bouncing"
+		t[#t+1] = "     //Balloon portrait - toggle the display of character portraits, if the theme has settings for them"
 		t[#t+1] = "     //Balloon move_closes - toggle balloon auto-close on player movement"
 		t[#t+1] = "     //Balloon debug off/all/mode/codes/chunk/process/wrap/chars/elements - enable debug modes"
 		t[#t+1] = "     //Balloon test <name> : <message> - display a test balloon"
@@ -482,8 +456,7 @@ windower.register_event("addon command", function(command, ...)
 	elseif command == 'reset' then
 		settings.Position.X = defaults.Position.X
 		settings.Position.Y = defaults.Position.Y
-		ui:position(settings, theme_options)
-		update_position()
+		ui:position(settings.Position.X, settings.Position.Y)
 		log("Balloon位置リセットしました。 (Balloon position reset.)")
 
 	elseif command == 'theme' then
@@ -506,7 +479,7 @@ windower.register_event("addon command", function(command, ...)
 		local old_scale = settings.Scale
 		if not args:empty() then
 			settings.Scale = tonumber(args[1])
-			ui:position(settings, theme_options)
+			ui:scale(settings.Scale)
 			log("scale changed from %.2f to %.2f":format(old_scale, settings.Scale))
 		else
 			log("current scale is %.2f (default: %.2f)":format(settings.Scale, defaults.Scale))
@@ -532,8 +505,13 @@ windower.register_event("addon command", function(command, ...)
 
 	elseif command == 'animate' then
 		settings.AnimatePrompt = not settings.AnimatePrompt
-		update_position()
+		ui:position()
 		log("animated text advance prompt - " .. (settings.AnimatePrompt and "on" or "off"))
+
+	elseif command == 'portrait' then
+		settings.ShowPortraits = not settings.ShowPortraits
+		apply_theme()
+		log("portrait display - " .. (settings.ShowPortraits and "on" or "off"))
 
 	elseif command == 'move_closes' then
 		settings.MovementCloses = not settings.MovementCloses
@@ -570,7 +548,7 @@ windower.register_event("prerender",function()
 
 	if balloon.on then
 		if settings.AnimatePrompt then
-			ui:animate_prompt(balloon.frame_count, theme_options)
+			ui:animate_prompt(balloon.frame_count)
 		end
 		ui:animate_text_display(settings.TextSpeed)
 	end
@@ -616,5 +594,5 @@ function update_position()
 	settings.Position.X = ui.message_background:pos_x() + ui.message_background:width() / 2
 	settings.Position.Y = ui.message_background:pos_y() + ui.message_background:height() / 2
 
-	ui:position(settings, theme_options)
+	ui:position(settings.Position.X, settings.Position.Y)
 end

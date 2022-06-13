@@ -66,8 +66,8 @@
             <OffsetY>90</OffsetY>
         </Prompt>
         <Timer>
-            <TextOffsetX>590</TextOffsetX>
-            <TextOffsetY>90</TextOffsetY>
+            <TextOffsetX>580</TextOffsetX>
+            <TextOffsetY>100</TextOffsetY>
             <Color>
                 <Alpha>255</Alpha>
                 <Blue>255</Blue>
@@ -82,5 +82,14 @@
                 <Width>1.5</Width>
             </Stroke>
         </Timer>
+        <Portrait>
+            <Width>96</Width>
+            <Height>96</Height>
+            <OffsetX>33</OffsetX>
+            <OffsetY>17</OffsetY>
+            <MaxLength>68</MaxLength>
+            <MessageTextOffsetX>135</MessageTextOffsetX>
+            <MessageTextOffsetY>-8</MessageTextOffsetY>
+        </Portrait>
     </global>
 </settings>

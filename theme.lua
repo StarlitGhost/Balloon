@@ -5,6 +5,8 @@ theme.apply = function(theme_settings)
 
     options.balloon_background = windower.addon_path .. 'themes/' .. theme_settings.name .. '/balloon.png'
     options.system_background = windower.addon_path .. 'themes/' .. theme_settings.name .. '/system.png'
+    options.portrait_background = windower.addon_path .. 'themes/' .. theme_settings.name .. '/portrait-bg.png'
+    options.portrait_frame = windower.addon_path .. 'themes/' .. theme_settings.name .. '/portrait-frame.png'
     options.name_background = windower.addon_path .. 'themes/' .. theme_settings.name .. '/name-bg.png'
     options.prompt_image = windower.addon_path .. 'themes/' .. theme_settings.name .. '/advance-prompt.png'
 
@@ -28,11 +30,11 @@ theme.apply = function(theme_settings)
     options.message.dialogue.red = theme_settings.message.dialogue.color.red
     options.message.dialogue.green = theme_settings.message.dialogue.color.green
     options.message.dialogue.blue = theme_settings.message.dialogue.color.blue
-    options.message.dialogue.reset = ('%d,%d,%d'):format(options.message.dialogue.red, options.message.dialogue.green, options.message.dialogue.blue)
     options.message.dialogue.items = theme_settings.message.dialogue.items
     options.message.dialogue.keyitems = theme_settings.message.dialogue.keyitems
     options.message.dialogue.gear = theme_settings.message.dialogue.gear
     options.message.dialogue.roe = theme_settings.message.dialogue.roe
+    options.message.dialogue.emote = theme_settings.message.dialogue.emote
     options.message.stroke = {}
     options.message.dialogue.stroke = {}
     if theme_settings.message.dialogue.stroke then
@@ -54,11 +56,11 @@ theme.apply = function(theme_settings)
         options.message.system.red = theme_settings.message.system.color.red
         options.message.system.green = theme_settings.message.system.color.green
         options.message.system.blue = theme_settings.message.system.color.blue
-        options.message.system.reset = ('%d,%d,%d'):format(options.message.system.red, options.message.system.green, options.message.system.blue)
         options.message.system.items = theme_settings.message.system.items
         options.message.system.keyitems = theme_settings.message.system.keyitems
         options.message.system.gear = theme_settings.message.system.gear
         options.message.system.roe = theme_settings.message.system.roe
+        options.message.system.emote = theme_settings.message.system.emote
         options.message.system.stroke = {}
         if theme_settings.message.system.stroke then
             options.message.system.stroke.width = theme_settings.message.system.stroke.width
@@ -94,6 +96,17 @@ theme.apply = function(theme_settings)
         options.name.stroke.red = theme_settings.npcname.stroke.red
         options.name.stroke.green = theme_settings.npcname.stroke.green
         options.name.stroke.blue = theme_settings.npcname.stroke.blue
+    end
+
+    if theme_settings.portrait then
+        options.portrait = {}
+        options.portrait.width = theme_settings.portrait.width
+        options.portrait.height = theme_settings.portrait.height
+        options.portrait.offset_x = theme_settings.portrait.offsetx
+        options.portrait.offset_y = theme_settings.portrait.offsety
+        options.portrait.max_length = theme_settings.portrait.maxlength
+        options.portrait.message_offset_x = theme_settings.portrait.messagetextoffsetx
+        options.portrait.message_offset_y = theme_settings.portrait.messagetextoffsety
     end
 
     if theme_settings.prompt then
