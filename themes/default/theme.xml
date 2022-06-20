@@ -8,7 +8,7 @@
             <Width>360</Width>
             <Height>43</Height>
             <OffsetX>10</OffsetX>
-            <OffsetY>-20</OffsetY>
+            <OffsetY>-23</OffsetY>
             <TextOffsetX>45</TextOffsetX>
             <TextOffsetY>-15</TextOffsetY>
             <Color>
@@ -87,7 +87,7 @@
             <Height>96</Height>
             <OffsetX>33</OffsetX>
             <OffsetY>17</OffsetY>
-            <MaxLength>68</MaxLength>
+            <MaxLength>66</MaxLength>
             <MessageTextOffsetX>135</MessageTextOffsetX>
             <MessageTextOffsetY>-8</MessageTextOffsetY>
         </Portrait>
