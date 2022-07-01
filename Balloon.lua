@@ -318,7 +318,7 @@ function process_balloon(npc_text, mode)
 		v = string.gsub(v, string.char(0x04), "")
 		v = string.gsub(v, string.char(0x05), "")
 		v = string.gsub(v, string.char(0x06), "")
-		v = string.gsub(v, "^?([%w%.'(])", "%1")
+		v = string.gsub(v, "^?([%w%.'(<“])", "%1")
 		v = string.gsub(v, '(%w)(%.%.%.+)([%w“])', "%1%2 %3") --add a space after elipses to allow better line splitting
 		v = string.gsub(v, '([%w”])%-%-([%w%p])', "%1-- %2") --same for double dashes
 
