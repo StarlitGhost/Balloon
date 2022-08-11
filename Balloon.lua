@@ -212,7 +212,7 @@ windower.register_event('incoming text',function(original,modified,mode,modified
 	if S{'codes', 'mode', 'all'}[balloon.debug] then print("Mode: " .. mode .. " Text: " .. original) end
 
 	-- skip text modes that aren't NPC speech
-    if not S{MODE.MESSAGE, MODE.SYSTEM, MODE.TIMED_BATTLE, MODE.TIMED_MESSAGE, MODE.CUTSCENE_EMOTE}[mode] then return end
+    if not S{MODE.MESSAGE, MODE.SYSTEM, MODE.TIMED_BATTLE, MODE.TIMED_MESSAGE}[mode] then return end
 
 	-- blank prompt line that auto-continues itself,
 	-- usually used to clear a space for a scene change?
